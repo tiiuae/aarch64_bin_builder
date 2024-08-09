@@ -37,7 +37,7 @@ build_openssl() {
 build_nmap() {
     cd /tmp
 
-    # Clone Toybox repository
+    # Clone Nmap repository
     if [ ! -d "nmap" ]; then
         log "Cloning Nmap repository"
         git clone --depth=1 "$NMAP_REPO"
