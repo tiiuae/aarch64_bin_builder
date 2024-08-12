@@ -19,7 +19,7 @@ build_app() {
 
     # Remove the builder image after the build is complete
     echo "Removing ${app_name}-builder image..."
-    docker rmi "${app_name}-builder"
+    docker rmi "${app_name}-builder" &>/dev/null
 
     echo "Finished building $app_name"
 }
