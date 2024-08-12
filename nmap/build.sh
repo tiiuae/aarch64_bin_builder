@@ -27,7 +27,7 @@ build_openssl() {
     cd openssl-${OPENSSL_VERSION}
 
     # Configure
-    CC='/opt/cross/bin/aarch64-linux-musleabi-gcc -static' ./Configure no-shared linux-aarch64
+    CC='/opt/cross/bin/aarch64-linux-musleabi-gcc -static' ./Configure no-shared linux-aarch64 no-tests
 
     # Build
     make -j"$(nproc)"
