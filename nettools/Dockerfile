@@ -1,5 +1,5 @@
 # Use the muslcross container as the base image
-FROM muslcross
+FROM aarch64_musl_cross:v1.0
 
 # Install dependencies
 RUN apk add --no-cache \

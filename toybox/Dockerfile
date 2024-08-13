@@ -1,5 +1,5 @@
 # Use the muslcross container as the base image
-FROM muslcross
+FROM aarch64_musl_cross:v1.0:v1.0
 
 # Copy the build script into the container
 COPY build.sh /build/
