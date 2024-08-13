@@ -1,40 +1,18 @@
 #!/bin/bash
 set -euo pipefail
+trap 'handle_err $LINENO' ERR
 
 # Configuration
-LOG_FILE="build_curl.log"
-BINARIES_DIR="/repo/binaries"
 CARES_VERSION="1.33.0"
-CARES_URL=" https://github.com/c-ares/c-ares/releases/download/v${CARES_VERSION}/c-ares-${CARES_VERSION}.tar.gz"
+CARES_URL="https://github.com/c-ares/c-ares/releases/download/v${CARES_VERSION}/c-ares-${CARES_VERSION}.tar.gz"
 WOLFSSL_VERSION="5.7.0"
 WOLFSSL_URL="https://github.com/wolfSSL/wolfssl/archive/refs/tags/v${WOLFSSL_VERSION}-stable.zip"
 CURL_VERSION="8.9.1"
 CURL_URL="https://github.com/curl/curl/releases/download/curl-$(echo $CURL_VERSION | tr . _)/curl-${CURL_VERSION}.tar.xz"
 
-# Function for logging
-log() {
-    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
-}
-
-# Function for error handling
-handle_error() {
-    log "Error occurred on line $1"
-    exit 1
-}
-
-# Set up error handling
-trap 'handle_error $LINENO' ERR
-
-# Start build process
-log "Starting cURL build process for aarch64 (static)"
-
 build_cares() {
-    cd /tmp
-    if [ ! -d "c-ares-${CARES_VERSION}" ]; then
-        log "Fetching c-ares code"
-        wget -qO- $CARES_URL | tar xvz
-        cd c-ares-${CARES_VERSION}
-    fi
+    log "Building c-ares dep..."
+    . fetch_archive "$CARES_URL"
 
     CC="aarch64-linux-musleabi-gcc -static" \
         CXX="aarch64-linux-musleabi-g++ -static" \
@@ -48,13 +26,8 @@ build_cares() {
 }
 
 build_wolfssl() {
-    cd /tmp
-    if [ ! -d "wolfssl-${WOLFSSL_VERSION}-stable" ]; then
-        log "Fetching wolfssl code"
-        wget -q $WOLFSSL_URL
-        unzip v${WOLFSSL_VERSION}-stable.zip
-        cd wolfssl-${WOLFSSL_VERSION}-stable
-    fi
+    log "Building wolfSSL dep..."
+    . fetch_archive "$WOLFSSL_URL"
 
     ./autogen.sh
     CC="aarch64-linux-musleabi-gcc -static" \
@@ -71,12 +44,8 @@ build_wolfssl() {
 }
 
 build_curl() {
-    cd /tmp
-    if [ ! -d "curl-${CURL_VERSION}" ]; then
-        log "Fetching cURL code"
-        wget -qO- $CURL_URL | tar xJ
-        cd curl-${CURL_VERSION}
-    fi
+    log "Building cURL"
+    . fetch_archive "$CURL_URL"
 
     CC="aarch64-linux-musleabi-gcc" \
         CXX="aarch64-linux-musleabi-g++" \
@@ -121,19 +90,10 @@ build_curl() {
     make LDFLAGS="-all-static -L/tmp/wolfssl-install/lib -L/tmp/cares-install/lib" \
         LIBS="-ldl -lm -lrt -lpthread -static /tmp/wolfssl-install/lib/libwolfssl.a /tmp/cares-install/lib/libcares.a" \
         -j"$(nproc)"
-
 }
 
+log "Starting cURL build process..."
 build_cares
 build_wolfssl
 build_curl
-
-# Verify build
-if [ -f "src/curl" ]; then
-    log "cURL built successfully"
-    cp src/curl "$BINARIES_DIR/curl"
-    log "cURL binary copied to $BINARIES_DIR/curl"
-else
-    log "cURL build failed"
-    exit 1
-fi
+verify_build -b curl -p src

@@ -18,10 +18,9 @@ build_app() {
     docker run --rm -v "$(pwd):/repo" -v "${app_name}-cache:/build-cache" "${app_name}-builder"
 
     # Remove the builder image after the build is complete
-    echo "Removing ${app_name}-builder image..."
-    docker rmi "${app_name}-builder" &>/dev/null
+    docker rmi "${app_name}-builder" >/dev/null 2>&1
 
-    echo "Finished building $app_name"
+    echo "  --> DONE $app_name"
 }
 
 # Function to clean up unused Docker resources related to builders
@@ -60,5 +59,3 @@ else
         fi
     done
 fi
-
-echo "All builds completed. Binaries are in $BINARIES_DIR"

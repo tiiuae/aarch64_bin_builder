@@ -1,55 +1,35 @@
 #!/bin/bash
 set -euo pipefail
+trap 'handle_err $LINENO' ERR
 
 # Configuration
 SOCAT_REPO="https://repo.or.cz/socat.git"
 OPENSSL_VERSION="1.1.1q"
-READLINE_REPO="http://git.savannah.gnu.org/cgit/readline.git/snapshot/readline-master.tar.gz"
+OPENSSL_URL="https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz"
+READLINE_VERSION="master"
+READLINE_REPO="http://git.savannah.gnu.org/cgit/readline.git/snapshot/readline-${READLINE_VERSION}.tar.gz"
 TCP_WRAPPERS_REPO="https://github.com/pexip/os-tcp-wrappers.git"
-LOG_FILE="build_socat.log"
-BINARIES_DIR="/repo/binaries"
 
 mkdir -p /tmp/static_libs
 STATIC_LIBS_PATH=/tmp/static_libs
 
-# Function for logging
-log() {
-    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
-}
-
-# Function for error handling
-handle_error() {
-    log "Error occurred on line $1"
-    exit 1
-}
-
-# Set up error handling
-trap 'handle_error $LINENO' ERR
-
 build_readline() {
-    cd /tmp
-
-    curl -LOk $READLINE_REPO
-    tar zxvf readline-master.tar.gz
-    cd readline-master
+    log "Building readline dep..."
+    . fetch_archive $READLINE_REPO
 
     CC='aarch64-linux-musleabi-gcc -static' \
         CFLAGS="-static" \
         ./configure --prefix=$STATIC_LIBS_PATH --disable-shared --enable-static --host=aarch64-linux-musleabi
 
-    # Build
     make -j"$(nproc)"
     make install
     log "Finished building static readline"
-
 }
 
 build_tcpwrappers() {
-    cd /tmp
-
-    git clone --depth=1 $TCP_WRAPPERS_REPO
-    cd os-tcp-wrappers
-    mv /build/tcp_wrapper_percent_m.patch percent_m.c
+    log "Building tcp-wrappers dep..."
+    . fetch_repo $TCP_WRAPPERS_REPO
+    cp /build/tcp_wrapper_percent_m.patch percent_m.c
     CC='aarch64-linux-musleabi-gcc' \
         CFLAGS="-static" \
         LDFLAGS="-static" \
@@ -59,41 +39,22 @@ build_tcpwrappers() {
 }
 
 build_openssl() {
-    cd /tmp
-
-    # Download
-    curl -LOk https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz
-    tar zxvf openssl-${OPENSSL_VERSION}.tar.gz
-    cd openssl-${OPENSSL_VERSION}
-
-    # Configure
+    log "Building openSSL dep..."
+    . fetch_archive $OPENSSL_URL
     CC='/opt/cross/bin/aarch64-linux-musleabi-gcc -static' \
         ./Configure no-shared linux-aarch64 no-tests --prefix=$STATIC_LIBS_PATH
-
-    # Build
     make -j"$(nproc)"
-    make install
+    make install_sw
     log "Finished building static OpenSSL"
 }
 
 build_socat() {
-    cd /tmp
+    log "Starting Socat build process..."
+    . fetch_repo $SOCAT_REPO
 
-    # Build socat
-    log "Starting socat build process for aarch64 (static)"
-
-    # Clone socat repository
-    if [ ! -d "socat" ]; then
-        log "Cloning socat repository"
-        git clone --depth=1 "$SOCAT_REPO"
-        cd socat
-    else
-        log "socat directory already exists, updating"
-        cd socat
-        git pull
-    fi
+    log "Building Socat"
+    #NOTE: This is a workaround to fix an autoreconf error
     autoreconf -fi || true
-
     CC="aarch64-linux-musleabi-gcc" \
         CXX="aarch64-linux-musleabi-g++" \
         CFLAGS="-static" \
@@ -103,23 +64,10 @@ build_socat() {
         ./configure --host=aarch64-linux-musleabi
 
     LDFLAGS="--static" make -j"$(nproc)"
-
-    echo "Static socat binary compiled successfully."
 }
 
 build_readline
 build_tcpwrappers
 build_openssl
 build_socat
-
-# Verify build
-if [ -f "socat" ]; then
-    log "socat built successfully"
-    cp socat "$BINARIES_DIR/socat"
-    log "socat binary copied to $BINARIES_DIR/socat"
-else
-    log "socat build failed"
-    exit 1
-fi
-
-log "socat build process completed"
+verify_build socat

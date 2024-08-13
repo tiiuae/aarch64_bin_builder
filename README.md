@@ -9,7 +9,7 @@ To get started, follow these simple steps:
 1. Build the Docker image:
 
 ```sh
-docker build -t aarch64_musl_cross:v1.0 . -f Dockerfile
+docker build -t aarch64_musl_cross:v1.0 . -f .cfg/Dockerfile
 ```
 
 > Note: Using _aarch64_musl_cross:v1.0_ as the tag is crucial!

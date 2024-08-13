@@ -1,0 +1,18 @@
+#!/bin/bash
+set -euo pipefail
+
+cd /tmp/
+
+REPO_URL=$1
+REPO_NAME=$(basename "$REPO_URL" | cut -d'.' -f0)
+
+# Clone given repository
+if [ ! -d "$REPO_NAME" ]; then
+    log "Cloning $REPO_NAME repository"
+    git clone --depth=1 "$REPO_URL"
+    cd "$REPO_NAME"
+else
+    log "Nmap directory already exists, updating"
+    cd "$REPO_NAME"
+    git pull
+fi

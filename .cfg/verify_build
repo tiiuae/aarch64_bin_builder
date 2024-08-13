@@ -1,0 +1,71 @@
+#!/bin/bash
+set -euo pipefail
+
+BINARIES=()
+CHECK_PATH=""
+
+verify_binaries() {
+    local exit_code=0
+
+    for item in "${BINARIES[@]}"; do
+        # Get just the binary name without the path
+        local binary_name=$(basename "$item")
+
+        # Construct the full path to check
+        local full_path="${CHECK_PATH:+$CHECK_PATH/}${item}"
+
+        if [ -f "$full_path" ]; then
+            log "${item} built successfully"
+
+            # Copy the binary to BINARIES_DIR, flattening the structure
+            cp "$full_path" "${BINARIES_DIR}/${binary_name}"
+            log "${binary_name} copied to ${BINARIES_DIR}/${binary_name}"
+        else
+            log "${item} build failed"
+            exit_code=1
+        fi
+    done
+
+    if [ $exit_code -eq 0 ]; then
+        log "All build processes completed successfully"
+    else
+        log "One or more build processes failed"
+    fi
+
+    return $exit_code
+}
+
+# Parse arguments
+while (("$#")); do
+    case "$1" in
+    -p | --path)
+        CHECK_PATH=$2
+        shift 2
+        ;;
+    -b | --binaries)
+        IFS=' ' read -ra BINARIES <<<"$2"
+        shift 2
+        ;;
+    -h | --help)
+        echo "Usage: $0 [-p|--path <path>] [-b|--binaries <space-separated binaries>]"
+        exit 0
+        ;;
+    -*)
+        echo "Error: Unknown option: $1" >&2
+        exit 1
+        ;;
+    *)
+        BINARIES+=("$1")
+        shift
+        ;;
+    esac
+done
+
+if [ ${#BINARIES[@]} -eq 0 ]; then
+    log "Error: No binaries specified. Use -b|--binaries option or provide them as arguments."
+    exit 1
+fi
+
+log "Verifying build"
+verify_binaries
+exit $?
