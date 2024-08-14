@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -e
 
 # Directory to store all built binaries
 BINARIES_DIR="$(pwd)/binaries"
@@ -8,7 +8,8 @@ mkdir -p "$BINARIES_DIR"
 # Function to build a single application
 build_app() {
     local app_dir="$1"
-    local app_name=$(basename "$app_dir")
+    local app_name
+    app_name=$(basename "$app_dir")
     echo "Building $app_name..."
 
     # Build the Docker image with BuildKit enabled
@@ -38,12 +39,6 @@ cleanup_docker() {
     docker image prune -f
 }
 
-# Main execution
-if [ "$1" = "--cleanup" ]; then
-    cleanup_docker
-    exit 0
-fi
-
 if [ -n "$1" ]; then
     if [ -d "$1" ]; then
         build_app "$1"
@@ -52,10 +47,15 @@ if [ -n "$1" ]; then
         exit 1
     fi
 else
-    echo "Building all applications..."
-    for dir in */; do
-        if [ -f "${dir}build.sh" ] && [ -f "${dir}Dockerfile" ]; then
-            build_app "$dir"
-        fi
-    done
+    if [ "$1" = "--cleanup" ]; then
+        cleanup_docker
+        exit 0
+    else
+        echo "Building all applications..."
+        for dir in */; do
+            if [ -f "${dir}build.sh" ] && [ -f "${dir}Dockerfile" ]; then
+                build_app "$dir"
+            fi
+        done
+    fi
 fi

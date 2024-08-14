@@ -9,7 +9,8 @@ verify_binaries() {
 
     for item in "${BINARIES[@]}"; do
         # Get just the binary name without the path
-        local binary_name=$(basename "$item")
+        local binary_name
+        binary_name=$(basename "$item")
 
         # Construct the full path to check
         local full_path="${CHECK_PATH:+$CHECK_PATH/}${item}"
