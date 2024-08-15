@@ -1,0 +1,4 @@
+ignored:
+  - DL3007 # Using latest tag for image
+  - DL3018 # Not specifying versions when doing apk add
+  - DL3013 # Pin versions in pip

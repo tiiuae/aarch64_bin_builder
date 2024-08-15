@@ -27,14 +27,14 @@ sed -i 's/__real_mmap64 = dlsym (dlflag, "mmap64");/__real_mmap64 = __real_mmap;
 
 log "Building Binutils"
 CC="aarch64-linux-musleabi-gcc -static" \
-    CXX="aarch64-linux-musleabi-g++ -static" \
-    CFLAGS="-static -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" \
-    ./configure --host=aarch64-linux-musleabi \
-    --disable-shared \
-    --enable-static \
-    --disable-werror \
-    --disable-gprof \
-    --disable-gprofng \
-    --disable-nls
+	CXX="aarch64-linux-musleabi-g++ -static" \
+	CFLAGS="-static -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" \
+	./configure --host=aarch64-linux-musleabi \
+	--disable-shared \
+	--enable-static \
+	--disable-werror \
+	--disable-gprof \
+	--disable-gprofng \
+	--disable-nls
 make LDFLAGS="--static -s" -j"$(nproc)"
 verify_build -b "$EXPECTED_BINS" -p binutils
