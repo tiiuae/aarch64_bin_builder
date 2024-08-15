@@ -4,7 +4,7 @@ This repository hosts an aarch64 MUSL-based cross-compilation toolchain designed
 
 ## 🚀 Usage
 
-The [latest release](https://github.com/tiiuae/pentesting_toolbelt/releases/tag/main) will always have all binaries built by a [github-action](https://github.com/tiiuae/pentesting_toolbelt/blob/main/.github/workflows/build.yml).
+The [latest release](https://github.com/tiiuae/aarch64_bin_builder/releases/latest) will always have all binaries built by a [github-action](https://github.com/tiiuae/aarch64_bin_builder/blob/main/.github/workflows/build.yml).
 If you want to extend, or build locally, follow these simple steps:
 
 1. Check out the repository
