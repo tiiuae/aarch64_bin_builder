@@ -73,7 +73,6 @@ jobs:
               mime_type="application/gzip"
             else
               mime_type=$(file -b --mime-type "$file")
-              chmod +x "$file"
             fi
             curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                  -H "Content-Type: $mime_type" \
