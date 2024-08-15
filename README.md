@@ -1,12 +1,14 @@
 # 🛠️ Aarch64 Static Cross-Compilation Toolchain
 
-This repository hosts an aarch64 MUSL-based cross-compilation toolchain designed to produce statically linked aarch64 binaries for essential tools used in our penetration testing engagements.
+This repository hosts an aarch64 MUSL-based cross-compilation toolchain designed to produce statically linked binaries for commonly needed tools
 
 ## 🚀 Usage
 
-To get started, follow these simple steps:
+The [latest release](https://github.com/tiiuae/pentesting_toolbelt/releases/tag/main) will always have all binaries built by a [github-action](https://github.com/tiiuae/pentesting_toolbelt/blob/main/.github/workflows/build.yml).
+If you want to extend, or build locally, follow these simple steps:
 
-1. Build the Docker image:
+1. Check out the repository
+2. Build the base builder Docker image:
 
 ```sh
 docker build -t aarch64_musl_cross:v1.0 . -f .cfg/Dockerfile
@@ -28,7 +30,10 @@ docker build -t aarch64_musl_cross:v1.0 . -f .cfg/Dockerfile
 ./build.sh <foldername>
 ```
 
-## TODOs
+## Contributing 🤝
 
-- [ ] Add more tooling
-- [ ] Decide if we want to abuse the GitHub CI for building
+Contributions are welcome! Please feel free to submit a pull request or open an issue for any bugs, feature requests, or improvements.
+
+## License 📜
+
+This project is licensed under the Apache License. See the [LICENSE](LICENSE.md) file for details.
