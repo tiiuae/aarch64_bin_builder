@@ -11,8 +11,8 @@ log "Starting Tar build process..."
 
 log "Building Tar"
 CC=/opt/cross/bin/aarch64-linux-musleabi-gcc \
-    CFLAGS=-static \
-    LDFLAGS="-static -s" \
-    ./configure --host=aarch64-linux-musleabi
+	CFLAGS=-static \
+	LDFLAGS="-static -s" \
+	./configure --host=aarch64-linux-musleabi
 make -j"$(nproc)"
 verify_build -b "tar" -p "src"

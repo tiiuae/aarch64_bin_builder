@@ -9,45 +9,45 @@ ARCHIVE=$(echo "${ARCHIVE_URL##*/}" | sed -E 's/\.tar(\.gz|\.bz2)?$//; s/\.tgz$/
 tmp_file=$(mktemp)
 
 if [ ! -d "$ARCHIVE" ]; then
-    log "Fetching $ARCHIVE archive"
-    if ! wget -qO "$tmp_file" "$ARCHIVE_URL"; then
-        handle_err $LINENO "Failed to fetch $ARCHIVE archive"
-    fi
+	log "Fetching $ARCHIVE archive"
+	if ! wget -qO "$tmp_file" "$ARCHIVE_URL"; then
+		handle_err $LINENO "Failed to fetch $ARCHIVE archive"
+	fi
 
-    if file "$tmp_file" | grep -q "tar archive"; then
-        mkdir -p "$ARCHIVE" && tar xf "$tmp_file" -C "$ARCHIVE" --strip-components 1
-    elif file "$tmp_file" | grep -q "bzip2 compressed"; then
-        mkdir -p "$ARCHIVE" && tar xjf "$tmp_file" -C "$ARCHIVE" --strip-components 1
-    elif file "$tmp_file" | grep -q "gzip compressed"; then
-        mkdir -p "$ARCHIVE" && tar xzf "$tmp_file" -C "$ARCHIVE" --strip-components 1
-    elif file "$tmp_file" | grep -q "XZ compressed"; then
-        mkdir -p "$ARCHIVE" && tar xJf "$tmp_file" -C "$ARCHIVE" --strip-components 1
-    elif file "$tmp_file" | grep -q "Zip archive"; then
-        temp_dir=$(mktemp -d)
+	if file "$tmp_file" | grep -q "tar archive"; then
+		mkdir -p "$ARCHIVE" && tar xf "$tmp_file" -C "$ARCHIVE" --strip-components 1
+	elif file "$tmp_file" | grep -q "bzip2 compressed"; then
+		mkdir -p "$ARCHIVE" && tar xjf "$tmp_file" -C "$ARCHIVE" --strip-components 1
+	elif file "$tmp_file" | grep -q "gzip compressed"; then
+		mkdir -p "$ARCHIVE" && tar xzf "$tmp_file" -C "$ARCHIVE" --strip-components 1
+	elif file "$tmp_file" | grep -q "XZ compressed"; then
+		mkdir -p "$ARCHIVE" && tar xJf "$tmp_file" -C "$ARCHIVE" --strip-components 1
+	elif file "$tmp_file" | grep -q "Zip archive"; then
+		temp_dir=$(mktemp -d)
 
-        # Extract the archive
-        unzip "$tmp_file" -d "$temp_dir"
+		# Extract the archive
+		unzip "$tmp_file" -d "$temp_dir"
 
-        # Find the extracted directory
-        extracted_dir=$(find "$temp_dir" -mindepth 1 -maxdepth 1 -type d)
+		# Find the extracted directory
+		extracted_dir=$(find "$temp_dir" -mindepth 1 -maxdepth 1 -type d)
 
-        if [ -z "$extracted_dir" ]; then
-            # If no directory was found, the contents were extracted directly into temp_dir
-            mv "$temp_dir" "$ARCHIVE"
-        else
-            # If a directory was found, rename it if necessary
-            if [ "$(basename "$extracted_dir")" != "$(basename "$ARCHIVE")" ]; then
-                mv "$extracted_dir" "$ARCHIVE"
-            else
-                mv "$extracted_dir" .
-            fi
-            rmdir "$temp_dir"
-        fi
-    else
-        rm -rf "$tmp_file"
-        handle_err $LINENO "Unknown archive format"
-    fi
+		if [ -z "$extracted_dir" ]; then
+			# If no directory was found, the contents were extracted directly into temp_dir
+			mv "$temp_dir" "$ARCHIVE"
+		else
+			# If a directory was found, rename it if necessary
+			if [ "$(basename "$extracted_dir")" != "$(basename "$ARCHIVE")" ]; then
+				mv "$extracted_dir" "$ARCHIVE"
+			else
+				mv "$extracted_dir" .
+			fi
+			rmdir "$temp_dir"
+		fi
+	else
+		rm -rf "$tmp_file"
+		handle_err $LINENO "Unknown archive format"
+	fi
 else
-    log "Archive already exists, skipping fetching"
+	log "Archive already exists, skipping fetching"
 fi
 cd "$ARCHIVE"

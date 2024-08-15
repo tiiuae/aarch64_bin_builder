@@ -13,7 +13,7 @@ log "Starting Nettools build process..."
 printf "%0.s\n" {1..44} | make config
 
 CC=aarch64-linux-musleabi-gcc \
-    CFLAGS="-I/usr/include -I/usr/include/bluetooth" \
-    LDFLAGS="--static -s" \
-    make -j"$(nproc)"
+	CFLAGS="-I/usr/include -I/usr/include/bluetooth" \
+	LDFLAGS="--static -s" \
+	make -j"$(nproc)"
 verify_build -b "$EXPECTED_BINARIES"

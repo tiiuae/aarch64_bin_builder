@@ -10,10 +10,10 @@ log "Starting OpenSSL build process..."
 . fetch_archive $OPENSSL_URL
 log "Building OpenSSL"
 LDFLAGS='-s -static' \
-    CFLAGS='-static' \
-    ./Configure no-shared \
-    linux-aarch64 \
-    no-tests \
-    --cross-compile-prefix=/opt/cross/bin/aarch64-linux-musleabi-
+	CFLAGS='-static' \
+	./Configure no-shared \
+	linux-aarch64 \
+	no-tests \
+	--cross-compile-prefix=/opt/cross/bin/aarch64-linux-musleabi-
 make -j"$(nproc)"
 verify_build -b "openssl" -p "apps"
