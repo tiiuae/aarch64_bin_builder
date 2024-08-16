@@ -47,7 +47,9 @@ source <(python3 -c "import urllib.request; print(urllib.request.urlopen('https:
 With this you have access to:
 
 ```sh
-static list
+# list all available binaries
+static ls
+# download the request binary
 static dl <bin>
 ```
 

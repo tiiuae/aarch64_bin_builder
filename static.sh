@@ -13,7 +13,7 @@ add_to_path() {
 	[[ ":$PATH:" != *":$TEMP_DIR:"* ]] && export PATH="$TEMP_DIR:$PATH"
 }
 
-download() {
+_download() {
 	local url="$1"
 	local output="$2"
 
@@ -30,11 +30,11 @@ download() {
 	elif command -v php &>/dev/null; then
 		php -r "file_put_contents('$output', file_get_contents('$url'));"
 	else
-		fetch_url "$url" >"$output"
+		_fetch_url "$url" >"$output"
 	fi
 }
 
-fetch_url() {
+_fetch_url() {
 	local url="$1"
 	local host path
 
@@ -48,9 +48,9 @@ fetch_url() {
 	exec 3>&-
 }
 
-list() {
+ls() {
 	local assets
-	assets=$(download "$REPO_URL" - | grep -oP '"name": "\K[^"]+' | tail -n +2 | sort -V)
+	assets=$(_download "$REPO_URL" - | grep -oP '"name": "\K[^"]+' | tail -n +2 | sort -V)
 	if [[ -n "$assets" ]]; then
 		echo "Available binaries:"
 		echo "$assets"
@@ -69,7 +69,7 @@ dl() {
 		return 1
 	}
 
-	release_info=$(download "$REPO_URL" -)
+	release_info=$(_download "$REPO_URL" -)
 	asset_url=$(echo "$release_info" | grep -oP "\"browser_download_url\": \"\K[^\"]+$binary")
 
 	[[ -z "$asset_url" ]] && {
@@ -78,7 +78,7 @@ dl() {
 	}
 
 	echo "Downloading $binary from $asset_url into $TEMP_DIR..."
-	if download "$asset_url" "$TEMP_DIR/$binary"; then
+	if _download "$asset_url" "$TEMP_DIR/$binary"; then
 		chmod +x "$TEMP_DIR/$binary"
 		echo "Successfully installed $binary to $TEMP_DIR/$binary"
 		add_to_path
@@ -90,7 +90,7 @@ dl() {
 
 static() {
 	case "$1" in
-	list) list ;;
+	ls) ls ;;
 	dl) dl "$2" ;;
 	*) echo "Usage: static {list|dl <binary_name>}" ;;
 	esac
@@ -99,7 +99,7 @@ static() {
 # Check if the script is being sourced
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
 	# Script is being sourced, export functions
-	export -f static list dl
+	export -f static list dl add_to_path
 else
 	# Script is being run directly, call static function
 	static "$@"
