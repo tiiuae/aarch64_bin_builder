@@ -30,6 +30,23 @@ docker build -t aarch64_musl_cross:v1.0 . -f .cfg/Dockerfile
 ./build.sh <foldername>
 ```
 
+### 📜 Script usage
+
+This repository hosts a [utility script](static.sh) that lets you list and download all binaries from the latest release.
+Ideally all downloaded binaries never touch the disk but only live in memory. As a fallback `/tmp` directory will be used.
+Either copy the script manually or source it from this repository:
+
+```sh
+source <(curl -SsfL https://github.com/tiiuae/aarch64_bin_builder/blob/main/static.sh)
+```
+
+With this you have access to:
+
+```sh
+static list
+static dl <bin>
+```
+
 ## Contributing 🤝
 
 Contributions are welcome! Please feel free to submit a pull request or open an issue for any bugs, feature requests, or improvements.
