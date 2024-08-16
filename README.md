@@ -38,6 +38,10 @@ Either copy the script manually or source it from this repository:
 
 ```sh
 source <(curl -SsfL https://raw.githubusercontent.com/tiiuae/aarch64_bin_builder/main/static.sh)
+# or
+source <(wget -qO- https://raw.githubusercontent.com/tiiuae/aarch64_bin_builder/main/static.sh)
+# or
+source <(python3 -c "import urllib.request; print(urllib.request.urlopen('https://raw.githubusercontent.com/tiiuae/aarch64_bin_builder/main/static.sh').read().decode())")
 ```
 
 With this you have access to:
