@@ -37,7 +37,7 @@ Ideally all downloaded binaries never touch the disk but only live in memory. As
 Either copy the script manually or source it from this repository:
 
 ```sh
-source <(curl -SsfL https://github.com/tiiuae/aarch64_bin_builder/blob/main/static.sh)
+source <(curl -SsfL https://raw.githubusercontent.com/tiiuae/aarch64_bin_builder/main/static.sh)
 ```
 
 With this you have access to:
