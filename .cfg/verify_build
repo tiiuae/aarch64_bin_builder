@@ -18,7 +18,8 @@ verify_binaries() {
 		if [ -f "$full_path" ]; then
 			log "${item} built successfully"
 
-			# Copy the binary to BINARIES_DIR, flattening the structure
+			# Compress & copy the binary to `BINARIES_DIR`, flattening the structure
+			upx --best --lzma --quiet "$full_path"
 			cp "$full_path" "${BINARIES_DIR}/${binary_name}"
 			log "${binary_name} copied to ${BINARIES_DIR}/${binary_name}"
 		else
