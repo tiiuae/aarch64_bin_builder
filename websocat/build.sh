@@ -36,7 +36,6 @@ build_websocat() {
 	export PKG_CONFIG_ALLOW_CROSS=1
 
 	# Build websocat
-	. "$HOME/.cargo/env"
 	cargo build --target aarch64-unknown-linux-musl --release --features=ssl
 	aarch64-linux-musleabi-strip target/aarch64-unknown-linux-musl/release/websocat
 }
