@@ -10,6 +10,7 @@ RUN apk add --no-cache \
     curl \
     file \
     flex \
+    gettext \
     git \
     libtool \
     pkgconf \
@@ -34,7 +35,17 @@ RUN apk add --no-cache \
     perl
 
 
+# Configure Rust
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+# hadolint ignore=SC1091
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
+    echo 'source $HOME/.cargo/env' >> /root/.bashrc && \
+    . "$HOME/.cargo/env" && \
+    rustup target add aarch64-unknown-linux-musl
+
+
 ENV BINARIES_DIR="/repo/binaries"
+ENV PATH="/root/.cargo/bin:${PATH}"
 
 # Set up some common helper functions
 COPY .cfg/fetch_repo /bin/

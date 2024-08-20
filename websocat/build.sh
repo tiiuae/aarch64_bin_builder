@@ -3,9 +3,9 @@ set -euo pipefail
 trap 'handle_err $LINENO' ERR
 
 # Configuration
-export WEBSOCAT_REPO="https://github.com/vi/websocat.git"
-export OPENSSL_VERSION="1.1.1q"
-export OPENSSL_URL="https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz"
+WEBSOCAT_REPO="https://github.com/vi/websocat.git"
+OPENSSL_VERSION="1.1.1q"
+OPENSSL_URL="https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz"
 
 mkdir -p /tmp/static_libs
 STATIC_LIBS_PATH=/tmp/static_libs
