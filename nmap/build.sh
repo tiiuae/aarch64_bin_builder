@@ -11,7 +11,7 @@ EXPECTED_BINARIES="nmap ncat/ncat nping/nping"
 build_openssl() {
 	log "Building openSSL dep..."
 	. fetch_archive $OPENSSL_URL
-	CC='/opt/cross/bin/aarch64-linux-musleabi-gcc -static' ./Configure no-shared linux-aarch64 no-tests
+	./Configure no-shared linux-aarch64 no-tests
 	make -j"$(nproc)"
 	log "Finished building static OpenSSL dependency"
 }
@@ -20,11 +20,16 @@ build_nmap() {
 	log "Building Nmap"
 	. fetch_repo $NMAP_REPO
 
-	CC='/opt/cross/bin/aarch64-linux-musleabi-gcc -static -fPIC' \
-		CXX='/opt/cross/bin/aarch64-linux-musleabi-g++ -static -static-libstdc++ -fPIC' \
+	CFLAGS="-static -fPIC" \
+		CXXFLAGS="-static -fPICi -static-libstdc++" \
 		LD=/opt/cross/bin/aarch64-linux-musleabi-ld \
 		LDFLAGS="-L/tmp/openssl-${OPENSSL_VERSION} -s" \
-		./configure --without-ndiff --without-zenmap --without-nmap-update --with-pcap=linux --with-openssl=/tmp/openssl-${OPENSSL_VERSION} --host=aarch64-linux-musl
+		./configure --without-ndiff \
+		--without-zenmap \
+		--without-nmap-update \
+		--with-pcap=linux \
+		--with-openssl=/tmp/openssl-${OPENSSL_VERSION} \
+		--host="$HOST"
 
 	# Don't build the libpcap.so file
 	sed -i -e 's/shared\: /shared\: #/' libpcap/Makefile

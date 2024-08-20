@@ -13,8 +13,7 @@ STATIC_LIBS_PATH=/tmp/static_libs
 build_openssl() {
 	log "Building openSSL dep..."
 	. fetch_archive $OPENSSL_URL
-	CC='/opt/cross/bin/aarch64-linux-musleabi-gcc -static' \
-		./Configure no-shared linux-aarch64 no-tests --prefix=$STATIC_LIBS_PATH
+	./Configure no-shared linux-aarch64 no-tests --prefix=$STATIC_LIBS_PATH
 	make -j"$(nproc)"
 	make install_sw
 	log "Finished building static OpenSSL"
@@ -25,10 +24,9 @@ build_gsocket() {
 	. fetch_repo $GSOCKET_REPO
 	./bootstrap
 
-	CC="aarch64-linux-musleabi-gcc" \
-		CFLAGS="-I$STATIC_LIBS_PATH/include -fPIC" \
+	CFLAGS="-I$STATIC_LIBS_PATH/include -fPIC" \
 		LDFLAGS="-L$STATIC_LIBS_PATH/lib -s -fPIC" \
-		./configure --host=aarch64-linux-musleabi --enable-static
+		./configure --host="$HOST" --enable-static
 	make all -j"$(nproc)"
 
 }

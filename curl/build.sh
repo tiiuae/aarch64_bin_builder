@@ -14,10 +14,8 @@ build_cares() {
 	log "Building c-ares dep..."
 	. fetch_archive "$CARES_URL"
 
-	CC="aarch64-linux-musleabi-gcc -static" \
-		CXX="aarch64-linux-musleabi-g++ -static" \
-		CFLAGS="-static -fPIC" \
-		./configure --host=aarch64-linux-musleabi \
+	CFLAGS="-static -fPIC" \
+		./configure --host="$HOST" \
 		--disable-shared \
 		--enable-static \
 		--prefix=/tmp/cares-install
@@ -30,10 +28,8 @@ build_wolfssl() {
 	. fetch_archive "$WOLFSSL_URL"
 
 	./autogen.sh
-	CC="aarch64-linux-musleabi-gcc -static" \
-		CXX="aarch64-linux-musleabi-g++ -static" \
-		CFLAGS="-static -fPIC" \
-		./configure --host=aarch64-linux-musleabi \
+	CFLAGS="-static -fPIC" \
+		./configure --host="$HOST" \
 		--disable-shared \
 		--enable-static \
 		--prefix=/tmp/wolfssl-install \
@@ -47,15 +43,13 @@ build_curl() {
 	log "Building cURL"
 	. fetch_archive "$CURL_URL"
 
-	CC="aarch64-linux-musleabi-gcc" \
-		CXX="aarch64-linux-musleabi-g++" \
-		CFLAGS="-fPIC -static" \
+	CFLAGS="-fPIC -static" \
 		CXXFLAGS="-fPIC -static" \
 		LDFLAGS="-L/tmp/wolfssl-install/lib -L/tmp/cares-install/lib -static" \
 		CPPFLAGS="-I/tmp/wolfssl-install/include -I/tmp/cares-install/include" \
 		PKG_CONFIG_PATH="/tmp/wolfssl-install/lib/pkgconfig:/tmp/cares-install/lib/pkgconfig" \
 		LIBS="-ldl -lm -lrt -lpthread -static /tmp/wolfssl-install/lib/libwolfssl.a /tmp/cares-install/lib/libcares.a" \
-		./configure --host=aarch64-linux-musleabi \
+		./configure --host="$HOST" \
 		--disable-shared \
 		--enable-static \
 		--enable-ipv6 \

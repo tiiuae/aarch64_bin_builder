@@ -10,9 +10,6 @@ log "Starting Tar build process..."
 . fetch_archive $TAR_REPO
 
 log "Building Tar"
-CC=/opt/cross/bin/aarch64-linux-musleabi-gcc \
-	CFLAGS=-static \
-	LDFLAGS="-static -s" \
-	./configure --host=aarch64-linux-musleabi
+./configure --host="$HOST"
 make -j"$(nproc)"
 verify_build -b "tar" -p "src"
