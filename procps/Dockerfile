@@ -1,8 +1,5 @@
 FROM aarch64_musl_cross:v1.0
 
-# Add dependencies
-RUN apk add --no-cache gettext-dev
-
 # Copy the build script into the container
 COPY build.sh /build/
 

@@ -11,12 +11,13 @@ RUN apk add --no-cache \
     file \
     flex \
     gettext \
+    gettext-dev \
     git \
     libtool \
     pkgconf \
     python3 \
     texinfo \
-    vim \
+    neovim \
     make \
     unzip \
     wget \
