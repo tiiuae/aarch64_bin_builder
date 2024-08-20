@@ -1,0 +1,12 @@
+FROM aarch64_musl_cross:v1.0
+
+RUN apk add --no-cache libudev-zero-dev
+
+# Copy the build script into the container
+COPY build.sh /build/
+
+# Make the build script executable
+RUN chmod +x /build/build.sh
+
+# Set the entrypoint to the build script
+ENTRYPOINT ["/build/build.sh"]
