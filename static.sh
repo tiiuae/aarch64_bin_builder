@@ -50,10 +50,26 @@ _fetch_url() {
 
 ls() {
 	local assets
+	local term_width
+	local column_cmd
+
+	# Fetch assets
 	assets=$(_download "$REPO_URL" - | grep -oP '"name": "\K[^"]+' | tail -n +2 | sort -V)
+
 	if [[ -n "$assets" ]]; then
 		echo "Available binaries:"
-		echo "$assets"
+
+		if command -v tput &>/dev/null; then
+			term_width=$(tput cols)
+			if command -v column &>/dev/null && column --help 2>&1 | grep -q -- '-c'; then
+				column_cmd="column -c $term_width"
+				echo "$assets" | $column_cmd
+			else
+				echo "$assets" | column
+			fi
+		else
+			echo "$assets"
+		fi
 	else
 		echo "Error: Unable to fetch binary list." >&2
 		return 1
