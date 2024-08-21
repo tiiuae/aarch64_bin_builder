@@ -3,10 +3,10 @@ set -euo pipefail
 trap 'handle_err $LINENO' ERR
 
 # Configuration
+VIM_VERSION="9.1.0686"
+VIM_URL="https://github.com/vim/vim/archive/refs/tags/v${VIM_VERSION}.tar.gz"
 NCURSES_VERSION="6.5"
 NCURSES_URL="https://ftp.gnu.org/gnu/ncurses/ncurses-${NCURSES_VERSION}.tar.gz"
-PROCPS_REPO="https://gitlab.com/procps-ng/procps.git"
-EXPECTED_BINARIES="free hugetop pgrep vmstat watch sysctl slabtop pwdx pkill pmap pidwait pidof pgrep kill"
 
 mkdir -p /tmp/static_libs
 STATIC_LIBS_PATH=/tmp/static_libs
@@ -33,31 +33,41 @@ build_libncurses() {
 	make install || true
 }
 
-build_procps() {
-	log "Building procps"
-	. fetch_repo $PROCPS_REPO
+build_vim() {
+	log "Building VIM"
+	. fetch_archive $VIM_URL
 
-	./autogen.sh
 	CFLAGS="-static -I$STATIC_LIBS_PATH/include" \
 		CPPFLAGS="-I$STATIC_LIBS_PATH/include" \
 		LDFLAGS="-static -s -L$STATIC_LIBS_PATH/lib" \
-		LIBS="-static" \
-		NCURSES_CFLAGS="-I$STATIC_LIBS_PATH/include/ncursesw" \
-		NCURSES_LIBS="-L$STATIC_LIBS_PATH/lib -lncursesw" \
-		ac_cv_func_malloc_0_nonnull=yes \
-		ac_cv_func_realloc_0_nonnull=yes \
-		./configure \
-		--enable-static \
-		--disable-shared \
+		LIBS="-static -lncursesw" \
+		vim_cv_toupper_broken=no \
+		vim_cv_terminfo=yes \
+		vim_cv_tgetent=zero \
+		vim_cv_getcwd_broken=no \
+		vim_cv_timer_create_with_lrt=no \
+		vim_cv_timer_create=no \
+		vim_cv_stat_ignores_slash=yes \
+		vim_cv_memmove_handles_overlap=yes \
+		./configure --disable-channel \
 		--host="$HOST" \
-		--with-ncurses \
-		--disable-nls
+		--disable-gpm \
+		--disable-gtktest \
+		--disable-gui \
+		--disable-netbeans \
+		--disable-nls \
+		--disable-selinux \
+		--disable-smack \
+		--disable-sysmouse \
+		--disable-xsmp \
+		--enable-multibyte \
+		--with-features=huge \
+		--without-x \
+		--with-tlib=ncursesw
 
-	make LDFLAGS="-all-static -s" -j"$(nproc)"
+	make -j"$(nproc)"
 }
 
 build_libncurses
-build_procps
-verify_build -p src -b "$EXPECTED_BINARIES"
-verify_build -p src/ps -b pscommand
-verify_build -p src/top -b top
+build_vim
+verify_build -b vim -p src
