@@ -55,8 +55,7 @@ static dl <bin>
 
 ## Disclaimer
 
-The binaries are packed with [UPX](https://github.com/upx/upx) to reduce their footprint drastically, allowing for faster download speeds and usage on
-memory/disk bottlenecked devices. That said, the build process is transparent and open source, so if you distrust the binary, please read the code or compile locally.
+The binaries are packed with [UPX](https://github.com/upx/upx) to drastically reduce their footprint, allowing for faster download speeds and usage on memory/disk bottlenecked devices. That said, the build process is transparent and open source, so if you distrust the binary, please read the code or compile locally.
 
 ## Contributing 🤝
 
