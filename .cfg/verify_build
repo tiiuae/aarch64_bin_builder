@@ -19,7 +19,10 @@ verify_binaries() {
 			log "${item} built successfully"
 
 			# Compress & copy the binary to `BINARIES_DIR`, flattening the structure
-			upx --best --lzma --quiet "$full_path"
+			if file "$full_path" | grep -q "ELF"; then
+				upx --best --lzma --quiet "$full_path"
+				log "${item} UPX compressed"
+			fi
 			cp "$full_path" "${BINARIES_DIR}/${binary_name}"
 			log "${binary_name} copied to ${BINARIES_DIR}/${binary_name}"
 		else
