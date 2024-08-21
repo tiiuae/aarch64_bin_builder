@@ -38,12 +38,12 @@ build_procps() {
 	. fetch_repo $PROCPS_REPO
 
 	./autogen.sh
-	CFLAGS="-static -I/tmp/static_libs/include" \
-		CPPFLAGS="-I/tmp/static_libs/include" \
-		LDFLAGS="-static -s -L/tmp/static_libs/lib" \
+	CFLAGS="-static -I$STATIC_LIBS_PATH/include" \
+		CPPFLAGS="-I$STATIC_LIBS_PATH/include" \
+		LDFLAGS="-static -s -L$STATIC_LIBS_PATH/lib" \
 		LIBS="-static" \
-		NCURSES_CFLAGS="-I/tmp/static_libs/include/ncursesw" \
-		NCURSES_LIBS="-L/tmp/static_libs/lib -lncursesw" \
+		NCURSES_CFLAGS="-I$STATIC_LIBS_PATH/include/ncursesw" \
+		NCURSES_LIBS="-L$STATIC_LIBS_PATH/lib -lncursesw" \
 		ac_cv_func_malloc_0_nonnull=yes \
 		ac_cv_func_realloc_0_nonnull=yes \
 		./configure \
