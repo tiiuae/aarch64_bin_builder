@@ -21,7 +21,7 @@ build_nmap() {
 	. fetch_repo $NMAP_REPO
 
 	CFLAGS="-static -fPIC" \
-		CXXFLAGS="-static -fPICi -static-libstdc++" \
+		CXXFLAGS="-static -fPIC -static-libstdc++" \
 		LD=/opt/cross/bin/aarch64-linux-musleabi-ld \
 		LDFLAGS="-L/tmp/openssl-${OPENSSL_VERSION} -s" \
 		./configure --without-ndiff \
