@@ -19,7 +19,7 @@ build_libnl() {
 	log "Building libnl-tiny dep..."
 	. fetch_repo $LIBNL_URL
 	mkdir build && cd build
-	CC='aarch64-linux-musleabi-gcc -static' LDFLAGS=-static cmake ..
+	cmake ..
 	make -j"$(nproc)"
 	if [ ! -d "$STATIC_LIBS_PATH/lib" ]; then
 		mkdir -p $STATIC_LIBS_PATH/lib
@@ -32,15 +32,13 @@ build_libpcap() {
 	log "Building libpcap dep..."
 	. fetch_archive $LIBPCAP_URL
 
-	CC='aarch64-linux-musleabi-gcc -static' \
-		CFLAGS="-static" \
-		LDFLAGS="-L$STATIC_LIBS_PATH/lib -static -s" \
+	LDFLAGS="-L$STATIC_LIBS_PATH/lib -static -s" \
 		LIBS="-lnl-tiny" \
 		./configure \
 		--prefix=$STATIC_LIBS_PATH \
 		--disable-shared \
 		--enable-ipv6 \
-		--host=aarch64-linux-musleabi \
+		--host="$HOST" \
 		--with-pcap=linux
 	make -j"$(nproc)"
 	make install
@@ -49,8 +47,7 @@ build_libpcap() {
 build_openssl() {
 	log "Building openSSL dep..."
 	. fetch_archive $OPENSSL_URL
-	CC='aarch64-linux-musleabi-gcc -static' \
-		./Configure no-shared linux-aarch64 no-tests --prefix=$STATIC_LIBS_PATH
+	./Configure no-shared linux-aarch64 no-tests --prefix=$STATIC_LIBS_PATH
 	make -j"$(nproc)"
 	make install_sw
 	log "Finished building static OpenSSL"
@@ -60,12 +57,10 @@ build_libcap_ng() {
 	log "Building libcap-ng dep..."
 	. fetch_repo $LIBCAP_NG_URL
 	./autogen.sh
-	CC='aarch64-linux-musleabi-gcc -static' \
-		CFLAGS="-static" \
-		./configure \
+	./configure \
 		--prefix=$STATIC_LIBS_PATH \
 		--disable-shared \
-		--host=aarch64-linux-musleabi || true
+		--host="$HOST" || true
 	make -j"$(nproc)"
 	make install
 }
@@ -74,13 +69,10 @@ build_tcpdump() {
 	log "Building tcpdump..."
 	. fetch_archive $TCPDUMP_URL
 
-	CC="aarch64-linux-musleabi-gcc -static" \
-		CXX="aarch64-linux-musleabi-g++ -static" \
-		CFLAGS="-static" \
-		CPPFLAGS="-I$STATIC_LIBS_PATH/include" \
+	CPPFLAGS="-I$STATIC_LIBS_PATH/include" \
 		LDFLAGS="-L$STATIC_LIBS_PATH/lib -static -s" \
 		LIBS="-lssl -lpcap -lcap-ng -lnl-tiny -lcrypto" \
-		./configure --host=aarch64-linux-musleabi \
+		./configure --host="$HOST" \
 		--with-cap-ng \
 		--with-crypto=$STATIC_LIBS_PATH
 

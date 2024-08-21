@@ -10,9 +10,6 @@ log "Starting Gzip build process..."
 . fetch_archive $GZIP_REPO
 
 log "Building Gzip"
-CC=/opt/cross/bin/aarch64-linux-musleabi-gcc \
-	CFLAGS=-static \
-	LDFLAGS="-static -s" \
-	./configure --host=aarch64-linux-musleabi
+./configure --host="$HOST"
 make -j"$(nproc)"
 verify_build gzip

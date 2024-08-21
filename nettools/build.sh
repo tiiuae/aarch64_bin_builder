@@ -12,8 +12,7 @@ log "Starting Nettools build process..."
 # Set the default options for all 44 options..
 printf "%0.s\n" {1..44} | make config
 
-CC=aarch64-linux-musleabi-gcc \
-	CFLAGS="-I/usr/include -I/usr/include/bluetooth" \
+CFLAGS="-I/usr/include -I/usr/include/bluetooth" \
 	LDFLAGS="--static -s" \
 	make -j"$(nproc)"
 verify_build -b "$EXPECTED_BINARIES"

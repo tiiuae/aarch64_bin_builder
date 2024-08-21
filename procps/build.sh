@@ -16,11 +16,8 @@ build_libncurses() {
 	. fetch_archive $NCURSES_URL
 
 	log "Building ncurses"
-	CC=aarch64-linux-musleabi-gcc \
-		CXX=aarch64-linux-musleabi-g++ \
-		LDFLAGS="-s -static" CFLAGS=-static \
-		./configure --prefix="$STATIC_LIBS_PATH" \
-		--host=aarch64-linux-musleabi \
+	./configure --prefix="$STATIC_LIBS_PATH" \
+		--host="$HOST" \
 		--without-ada \
 		--without-cxx \
 		--without-cxx-binding \
@@ -41,8 +38,7 @@ build_procps() {
 	. fetch_repo $PROCPS_REPO
 
 	./autogen.sh
-	CC='aarch64-linux-musleabi-gcc' \
-		CFLAGS="-static -I/tmp/static_libs/include" \
+	CFLAGS="-static -I/tmp/static_libs/include" \
 		CPPFLAGS="-I/tmp/static_libs/include" \
 		LDFLAGS="-static -s -L/tmp/static_libs/lib" \
 		LIBS="-static" \
@@ -53,7 +49,7 @@ build_procps() {
 		./configure \
 		--enable-static \
 		--disable-shared \
-		--host=aarch64-linux-musleabi \
+		--host="$HOST" \
 		--with-ncurses \
 		--disable-nls
 
