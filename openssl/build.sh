@@ -9,6 +9,8 @@ OPENSSL_URL="https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz"
 log "Starting OpenSSL build process..."
 . fetch_archive $OPENSSL_URL
 log "Building OpenSSL"
+unset CC
+unset CXX
 ./Configure no-shared \
 	linux-aarch64 \
 	no-tests \
