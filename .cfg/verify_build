@@ -20,8 +20,11 @@ verify_binaries() {
 
 			# Compress & copy the binary to `BINARIES_DIR`, flattening the structure
 			if file "$full_path" | grep -q "ELF"; then
-				upx --best --lzma --quiet "$full_path"
-				log "${item} UPX compressed"
+				if ! upx --best --lzma --quiet "$full_path" 2>&1 | grep -q "AlreadyPackedException"; then
+					echo "Successfully packed: $item"
+				else
+					echo "Skipping already packed binary: $item"
+				fi
 			fi
 			cp "$full_path" "${BINARIES_DIR}/${binary_name}"
 			log "${binary_name} copied to ${BINARIES_DIR}/${binary_name}"
