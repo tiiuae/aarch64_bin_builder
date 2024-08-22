@@ -26,6 +26,7 @@ build_libxz() {
 		--disable-doc \
 		--disable-scripts \
 		--disable-doxygen \
+		--enable-debug-frame \
 		--enable-threads=posix \
 		--enable-small
 
@@ -57,7 +58,6 @@ build_libunwind() {
 		./configure \
 		--host="$HOST" \
 		--prefix="$STATIC_LIBS_PATH" \
-		--disable-shared \
 		--enable-static \
 		--disable-tests \
 		--disable-documentation \
@@ -65,7 +65,11 @@ build_libunwind() {
 		--enable-minidebuginfo \
 		--enable-zlibdebuginfo
 
-	#TODO: libunwind broken, needs some patching it seems
+	#NOTE: There's a build error related to redefine of multiple structs...
+	sed -i 's/#include <asm\/sigcontext.h>/\/\/#include <asm\/sigcontext.h>/g' /opt/cross/aarch64-linux-musleabi/include/asm/ptrace.h
+
+	make -j"$(nproc)"
+	make install
 
 	log "Finished building static libunwind"
 }
@@ -73,14 +77,19 @@ build_libunwind() {
 build_strace() {
 	. fetch_repo $STRACE_REPO
 
-	./configure \
+	./boostrap
+	#FIXME: There's an issue with libunwind and m32 personality support
+	CPPFLAGS="-I$STATIC_LIBS_PATH/include" \
+		LDFLAGS="-L$STATIC_LIBS_PATH/lib" \
+		LIBS="-L$STATIC_LIBS_PATH/lib -lunwind-aarch64 -llzma" \
+		./configure \
 		--host="$HOST" \
 		--enable-arm-oabi \
-		--with-libdw \
 		--with-libunwind \
 		--with-libiberty \
+		--enable-mpers=m32 \
 		--with-gcov=no \
-		--with-libselinux=no
+		--with-libselinux=no || true
 
 	make -j"$(nproc)"
 }
@@ -88,4 +97,4 @@ build_strace() {
 build_libxz
 build_zlib
 build_libunwind
-build_strace
+#build_strace
