@@ -74,6 +74,8 @@ dl() {
 	release_info=$(_download "$REPO_URL" -)
 
 	for binary in "$@"; do
+		echo "[*] Searching for $binary..."
+
 		# Get all matching URLs
 		asset_urls=$(echo "$release_info" | sed -n 's/.*"browser_download_url": "\([^"]*'"$binary"'[^"]*\)".*/\1/p')
 
@@ -83,29 +85,28 @@ dl() {
 			continue
 		fi
 
-		# Find the exact match or the most relevant URL
-		exact_match=$(echo "$asset_urls" | grep -Fx "$binary")
-		if [ -n "$exact_match" ]; then
-			asset_url="$exact_match"
-		else
-			asset_url=$(echo "$asset_urls" | grep -v '\.tar\.gz$' | head -n 1)
-		fi
+		# Process each matching URL
+		echo "$asset_urls" | while read -r asset_url; do
+			filename=$(basename "$asset_url")
 
-		if [ -z "$asset_url" ]; then
-			echo "[-] Error: Couldn't determine appropriate download URL for '$binary'." >&2
-			continue
-		fi
-
-		echo "[*] Downloading $binary..."
-		if _download "$asset_url" "$TEMP_DIR/$binary"; then
-			chmod +x "$TEMP_DIR/$binary"
-			echo "  [+] Successfully installed $binary to $TEMP_DIR/$binary"
-			add_to_path
-		else
-			echo "  [-] Error: Failed to download $binary." >&2
-		fi
+			# Check if it's an exact match or starts with the binary name
+			case "$filename" in
+			"$binary" | "$binary"*)
+				echo "[*] Downloading $filename..."
+				if _download "$asset_url" "$TEMP_DIR/$filename"; then
+					chmod +x "$TEMP_DIR/$filename"
+					echo "  [+] Successfully installed $filename to $TEMP_DIR/$filename"
+					add_to_path
+				else
+					echo "  [-] Error: Failed to download $filename." >&2
+				fi
+				;;
+			*)
+				# Skip files that don't match the criteria
+				;;
+			esac
+		done
 	done
-
 }
 
 static() {
