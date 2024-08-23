@@ -1,7 +1,5 @@
 #!/bin/sh
 
-set -e
-
 REPO_URL="https://api.github.com/repos/tiiuae/aarch64_bin_builder/releases/latest"
 TEMP_DIR="/dev/shm"
 
@@ -21,7 +19,7 @@ _download() {
 	output="$2"
 
 	if command -v curl >/dev/null 2>&1; then
-		curl -sSL -o "$output" "$url"
+		curl -ksSL -o "$output" "$url"
 	elif command -v wget >/dev/null 2>&1; then
 		wget -q -O "$output" "$url"
 	elif command -v python3 >/dev/null 2>&1 || command -v python >/dev/null 2>&1; then
@@ -36,7 +34,7 @@ _download() {
 	elif command -v php >/dev/null 2>&1; then
 		php -r "file_put_contents('$output', file_get_contents('$url'));"
 	else
-		echo "Error: No suitable download method found." >&2
+		echo "[-] Error: No suitable download method found." >&2
 		return 1
 	fi
 }
@@ -59,46 +57,66 @@ list_binaries() {
 	assets=$(_download "$REPO_URL" - | sed -n 's/.*"name": "\([^"]*\)".*/\1/p' | sed '1d' | sort -V)
 
 	if [ -n "$assets" ]; then
-		echo "Available binaries:"
+		echo "[*] Available binaries:"
 		echo "$assets" | column
 	else
-		echo "Error: Unable to fetch binary list." >&2
+		echo "[-] Error: Unable to fetch binary list." >&2
 		return 1
 	fi
 }
 
 dl() {
-	binary="$1"
-	[ -z "$binary" ] && {
-		echo "Error: Please specify a binary to download." >&2
-		return 1
-	}
-
-	release_info=$(_download "$REPO_URL" -)
-	asset_url=$(echo "$release_info" | sed -n 's/.*"browser_download_url": "\([^"]*'"$binary"'[^"]*\)".*/\1/p')
-
-	[ -z "$asset_url" ] && {
-		echo "Error: Binary '$binary' not found." >&2
-		return 1
-	}
-
-	echo "Downloading $binary from $asset_url into $TEMP_DIR..."
-	if _download "$asset_url" "$TEMP_DIR/$binary"; then
-		chmod +x "$TEMP_DIR/$binary"
-		echo "Successfully installed $binary to $TEMP_DIR/$binary"
-		add_to_path
-	else
-		echo "Error: Failed to download $binary." >&2
+	if [ $# -eq 0 ]; then
+		echo "[-] Error: Please specify at least one binary to download." >&2
 		return 1
 	fi
+
+	release_info=$(_download "$REPO_URL" -)
+
+	for binary in "$@"; do
+		# Get all matching URLs
+		asset_urls=$(echo "$release_info" | sed -n 's/.*"browser_download_url": "\([^"]*'"$binary"'[^"]*\)".*/\1/p')
+
+		# Check if we have any matches
+		if [ -z "$asset_urls" ]; then
+			echo "[-] Error: Binary '$binary' not found." >&2
+			continue
+		fi
+
+		# Find the exact match or the most relevant URL
+		exact_match=$(echo "$asset_urls" | grep -Fx "$binary")
+		if [ -n "$exact_match" ]; then
+			asset_url="$exact_match"
+		else
+			asset_url=$(echo "$asset_urls" | grep -v '\.tar\.gz$' | head -n 1)
+		fi
+
+		if [ -z "$asset_url" ]; then
+			echo "[-] Error: Couldn't determine appropriate download URL for '$binary'." >&2
+			continue
+		fi
+
+		echo "[*] Downloading $binary..."
+		if _download "$asset_url" "$TEMP_DIR/$binary"; then
+			chmod +x "$TEMP_DIR/$binary"
+			echo "  [+] Successfully installed $binary to $TEMP_DIR/$binary"
+			add_to_path
+		else
+			echo "  [-] Error: Failed to download $binary." >&2
+		fi
+	done
+
 }
 
 static() {
 	case "$1" in
 	ls) list_binaries ;;
 	path) add_to_path ;;
-	dl) dl "$2" ;;
-	*) echo "Usage: static {ls|dl <binary_name>|path}" ;;
+	dl)
+		shift
+		dl "$@"
+		;;
+	*) echo "[?] Usage: static {ls|dl <binaries>|path}" ;;
 	esac
 }
 
