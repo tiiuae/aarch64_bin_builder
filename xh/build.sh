@@ -10,6 +10,8 @@ build_xh() {
 	. fetch_repo $XH_REPO
 
 	log "Building xh"
+	unset CC
+	unset CXX
 	cargo build --target aarch64-unknown-linux-musl --release
 	aarch64-linux-musleabi-strip target/aarch64-unknown-linux-musl/release/xh
 }
