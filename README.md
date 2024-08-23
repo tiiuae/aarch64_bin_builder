@@ -51,6 +51,11 @@ With this you have access to:
 static ls
 # download the request binary
 static dl <bin>
+# download multiple binaries at once
+static dl <bin_a> <bin_b>
+# download binaries based on fuzzy matching
+# To download all avilable binaries starting with "foo":
+static dl foo
 ```
 
 ## Disclaimer
