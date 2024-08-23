@@ -20,27 +20,43 @@ verify_binaries() {
 
 			# Compress & copy the binary to `BINARIES_DIR`, flattening the structure
 			if file "$full_path" | grep -q "ELF"; then
+
+				if ! file "$full_path" | grep -q "64-bit"; then
+					log "${item} is not 64-bit"
+					return 1
+				fi
+
+				if ! file "$full_path" | grep -q "ARM aarch64"; then
+					log "${item} is not ARM aarch64"
+					return 1
+				fi
+
+				if ! file "$full_path" | grep -q "statically linked"; then
+					log "${item} is not statically linked"
+					return 1
+				fi
+
+				if ! file "$full_path" | grep -q "stripped"; then
+					log "${item} is not stripped"
+					return 1
+				fi
+
 				if ! upx --best --lzma --quiet "$full_path" 2>&1 | grep -q "AlreadyPackedException"; then
-					echo "Successfully packed: $item"
+					log "Successfully packed: $item"
 				else
-					echo "Skipping already packed binary: $item"
+					log "Skipping already packed binary: $item"
 				fi
 			fi
 			cp "$full_path" "${BINARIES_DIR}/${binary_name}"
 			log "${binary_name} copied to ${BINARIES_DIR}/${binary_name}"
 		else
-			log "${item} build failed"
-			exit_code=1
+			log "${item} not found in ${CHECK_PATH}"
+			return 1
 		fi
 	done
 
-	if [ $exit_code -eq 0 ]; then
-		log "All build processes completed successfully"
-	else
-		log "One or more build processes failed"
-	fi
-
-	return $exit_code
+	log "All binaries verified successfully"
+	return 0
 }
 
 # Parse arguments
@@ -55,11 +71,11 @@ while (("$#")); do
 		shift 2
 		;;
 	-h | --help)
-		echo "Usage: $0 [-p|--path <path>] [-b|--binaries <space-separated binaries>]"
+		log "Usage: $0 [-p|--path <path>] [-b|--binaries <space-separated binaries>]"
 		exit 0
 		;;
 	-*)
-		echo "Error: Unknown option: $1" >&2
+		log "Error: Unknown option: $1" >&2
 		exit 1
 		;;
 	*)
@@ -74,6 +90,6 @@ if [ ${#BINARIES[@]} -eq 0 ]; then
 	exit 1
 fi
 
-log "Verifying build"
+log "Verifying build for $(printf '%s ' "${BINARIES[@]}") in ${CHECK_PATH:-$(pwd)}"
 verify_binaries
 exit $?
