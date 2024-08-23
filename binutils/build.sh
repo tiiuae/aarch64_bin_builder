@@ -34,5 +34,5 @@ CFLAGS="-static -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" \
 	--disable-gprof \
 	--disable-gprofng \
 	--disable-nls
-make -j"$(nproc)"
+make LDFLAGS="--static -s" -j"$(nproc)"
 verify_build -b "$EXPECTED_BINS" -p binutils
