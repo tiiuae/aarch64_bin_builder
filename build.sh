@@ -1,9 +1,11 @@
 #!/bin/bash
-set -e
 
 # Directory to store all built binaries
 BINARIES_DIR="$(pwd)/binaries"
 mkdir -p "$BINARIES_DIR"
+
+TMP_LOG_DIR=$(mktemp -d)
+TMP_LOG="$TMP_LOG_DIR/build.log"
 
 # Function to build a single application
 build_app() {
@@ -13,15 +15,28 @@ build_app() {
 	echo "Building $app_name..."
 
 	# Build the Docker image with BuildKit enabled
-	DOCKER_BUILDKIT=1 docker build --no-cache -t "${app_name}-builder" "$app_dir"
+	docker build --no-cache -t "${app_name}-builder" "$app_dir"
 
 	# Run the container to build the application, using a named volume for caching
-	docker run --rm -v "$(pwd):/repo" -v "${app_name}-cache:/build-cache" "${app_name}-builder"
+	docker run --rm \
+		-v "$(pwd):/repo" \
+		-v "${app_name}-cache:/build-cache" \
+		-v "$TMP_LOG_DIR:/build_log" \
+		"${app_name}-builder"
+	exit_status=$?
+
+	# If the exit status is non-zero (error occurred)
+	if [ $exit_status -ne 0 ]; then
+		echo "Error occurred. Output:"
+		cat "$TMP_LOG"
+		rm -Rf "$TMP_LOG_DIR"
+		exit $exit_status
+	fi
 
 	# Remove the builder image after the build is complete
 	docker rmi "${app_name}-builder" >/dev/null 2>&1
 
-	echo "  --> DONE $app_name"
+	echo "  [DONE]"
 }
 
 # Function to clean up unused Docker resources related to builders
@@ -59,3 +74,4 @@ else
 		done
 	fi
 fi
+rm -Rf "$TMP_LOG_DIR"

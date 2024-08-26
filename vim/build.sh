@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 trap 'handle_err $LINENO' ERR
+. wrunf
+
+# -- EDIT BELOW THIS LINE --
 
 # Configuration
 VIM_VERSION="9.1.0686"
@@ -8,14 +11,9 @@ VIM_URL="https://github.com/vim/vim/archive/refs/tags/v${VIM_VERSION}.tar.gz"
 NCURSES_VERSION="6.5"
 NCURSES_URL="https://ftp.gnu.org/gnu/ncurses/ncurses-${NCURSES_VERSION}.tar.gz"
 
-mkdir -p /tmp/static_libs
-STATIC_LIBS_PATH=/tmp/static_libs
-
 build_libncurses() {
-	log "Building libncurses-dev dep..."
 	. fetch_archive $NCURSES_URL
 
-	log "Building ncurses"
 	./configure --prefix="$STATIC_LIBS_PATH" \
 		--host="$HOST" \
 		--without-ada \
@@ -34,7 +32,6 @@ build_libncurses() {
 }
 
 build_vim() {
-	log "Building VIM"
 	. fetch_archive $VIM_URL
 
 	CFLAGS="-static -I$STATIC_LIBS_PATH/include" \
@@ -68,6 +65,9 @@ build_vim() {
 	make -j"$(nproc)"
 }
 
-build_libncurses
-build_vim
+log "Starting vim build process..."
+log "Building libncurses-dev dep..."
+wrunf build_libncurses
+log "Building vim"
+wrunf build_vim
 verify_build -b vim -p src

@@ -1,39 +1,37 @@
 #!/bin/bash
 set -euo pipefail
 trap 'handle_err $LINENO' ERR
+. wrunf
+
+# -- EDIT BELOW THIS LINE --
 
 # Configuration
 WEBSOCAT_REPO="https://github.com/vi/websocat.git"
 OPENSSL_VERSION="1.1.1q"
 OPENSSL_URL="https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz"
 
-mkdir -p /tmp/static_libs
-STATIC_LIBS_PATH=/tmp/static_libs
-
 build_openssl() {
-	log "Building openSSL dep..."
 	. fetch_archive $OPENSSL_URL
-	./Configure no-shared linux-aarch64 no-tests --prefix=$STATIC_LIBS_PATH
+	./Configure no-shared linux-aarch64 no-tests --prefix="$STATIC_LIBS_PATH"
 	make -j"$(nproc)"
 	make install_sw
-	log "Finished building static OpenSSL"
 }
 
 build_websocat() {
-	log "Starting Websocat build process..."
 	. fetch_repo $WEBSOCAT_REPO
 
-	log "Building Websocat"
 	# Point to our custom-built OpenSSL
 	export OPENSSL_DIR=$STATIC_LIBS_PATH
 	export OPENSSL_STATIC=1
 	export PKG_CONFIG_ALLOW_CROSS=1
 
-	# Build websocat
-	cargo build --target aarch64-unknown-linux-musl --release --features=ssl
-	aarch64-linux-musleabi-strip target/aarch64-unknown-linux-musl/release/websocat
+	cargo build --target "$RUST_TARGET" --release --features=ssl
+	aarch64-linux-musleabi-strip "$RUST_REL/websocat"
 }
 
-build_openssl
-build_websocat
-verify_build -b websocat -p "target/aarch64-unknown-linux-musl/release"
+log "Starting websocat build process..."
+log "Building openSSL dep..."
+wrunf build_openssl
+log "Building websocat"
+wrunf build_websocat
+verify_build -b websocat -p "$RUST_REL"

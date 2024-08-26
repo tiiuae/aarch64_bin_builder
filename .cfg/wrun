@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Function to capture output and only display on error
+# Example usage in a build script:
+#   run_build_command make defconfig foobar
+#   run_build_command ./configure --prefix=/usr
+#   run_build_command make
+#   run_build_command make install
+run_build_command() {
+	local log_file
+	log_file=$(mktemp)
+	local exit_code=0
+	local cmd=()
+	local env_vars=()
+
+	# Separate environment variables from the command
+	while [[ $# -gt 0 ]]; do
+		if [[ $1 == *"="* ]]; then
+			env_vars+=("$1")
+		else
+			cmd+=("$1")
+		fi
+		shift
+	done
+
+	# Temporarily turn off exit on error for this function
+	set +e
+
+	# Run the command with environment variables, capturing all output
+	env "${env_vars[@]}" "${cmd[@]}" >"$log_file" 2>&1
+	exit_code=$?
+
+	# If there was an error, display the log
+	if [ $exit_code -ne 0 ]; then
+		echo "Error occurred during build process. Full log:" >&2
+		cat "$log_file" >&2
+	fi
+
+	# Clean up the temporary file
+	rm -f "$log_file"
+
+	# Return the original exit code
+	return $exit_code
+}
+
+if [ $# -eq 0 ]; then
+	echo "Usage: $0 <command> [arguments...]" >&2
+	exit 1
+fi
+
+run_build_command "$@"
+exit $?

@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 trap 'handle_err $LINENO' ERR
+. wrunf
+
+# -- EDIT BELOW THIS LINE --
 
 # Configuration
 CARES_VERSION="1.33.0"
@@ -11,7 +14,6 @@ CURL_VERSION="8.9.1"
 CURL_URL="https://github.com/curl/curl/releases/download/curl-$(echo $CURL_VERSION | tr . _)/curl-${CURL_VERSION}.tar.xz"
 
 build_cares() {
-	log "Building c-ares dep..."
 	. fetch_archive "$CARES_URL"
 
 	CFLAGS="-static -fPIC" \
@@ -24,7 +26,6 @@ build_cares() {
 }
 
 build_wolfssl() {
-	log "Building wolfSSL dep..."
 	. fetch_archive "$WOLFSSL_URL"
 
 	./autogen.sh
@@ -40,7 +41,6 @@ build_wolfssl() {
 }
 
 build_curl() {
-	log "Building cURL"
 	. fetch_archive "$CURL_URL"
 
 	CFLAGS="-fPIC -static" \
@@ -87,7 +87,10 @@ build_curl() {
 }
 
 log "Starting cURL build process..."
-build_cares
-build_wolfssl
-build_curl
+log "Building c-ares dep..."
+wrunf build_cares
+log "Building wolfSSL dep..."
+wrunf build_wolfssl
+log "Building cURL"
+wrunf build_curl
 verify_build -b curl -p src

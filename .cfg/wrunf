@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# TODO: Currently this suppresses all output from the called function.
+# It would be nice to have the `log` helper function to still produce output
+wrunf() {
+	local func_name=$1
+	shift
+	local log_file="/build_log/build.log"
+	local exit_code=0
+
+	# Save current options
+	local old_opts="$-"
+
+	# Temporarily turn off strict mode
+	set +euo pipefail
+
+	# Execute the function directly in the current shell
+	if declare -f "$func_name" >/dev/null; then
+		{
+			# Re-enable any options that were set before
+			if [[ $old_opts == *e* ]]; then set -e; fi
+			if [[ $old_opts == *u* ]]; then set -u; fi
+			if [[ $old_opts == *o* ]]; then set -o pipefail; fi
+
+			$func_name "$@"
+		} >>"$log_file" 2>&1
+		exit_code=$?
+	else
+		echo "[-] Error: Function $func_name does not exist" >>"$log_file" 2>&1
+		exit_code=1
+	fi
+
+	# Restore original options
+	if [[ $old_opts == *e* ]]; then set -e; else set +e; fi
+	if [[ $old_opts == *u* ]]; then set -u; else set +u; fi
+	if [[ $old_opts == *o* ]]; then set -o pipefail; else set +o pipefail; fi
+
+	# Return the original exit code
+	return $exit_code
+}
+
+# This script is meant to be sourced, not executed directly
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+	echo "Error: This script should be sourced, not executed directly." >&2
+	echo "Usage: . wrunf <function_name>" >&2
+	exit 1
+fi
