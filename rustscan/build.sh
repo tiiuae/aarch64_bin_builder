@@ -1,18 +1,20 @@
 #!/bin/bash
 set -euo pipefail
 trap 'handle_err $LINENO' ERR
+. wrunf
+
+# -- EDIT BELOW THIS LINE --
 
 # Configuration
 RUSTSCAN_REPO="https://github.com/RustScan/RustScan.git"
 
 build_rustscan() {
-	log "Starting rustscan build process..."
 	. fetch_repo $RUSTSCAN_REPO
 
-	log "Building rustscan"
 	cargo build --target aarch64-unknown-linux-musl --release
-	aarch64-linux-musleabi-strip target/aarch64-unknown-linux-musl/release/rustscan
+	aarch64-linux-musleabi-strip "$RUST_REL/rustscan"
 }
 
-build_rustscan
-verify_build -b rustscan -p "target/aarch64-unknown-linux-musl/release"
+log "Building rustscan"
+wrunf build_rustscan
+verify_build -b rustscan -p "$RUST_REL"

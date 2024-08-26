@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 trap 'handle_err $LINENO' ERR
+. wrunf
+
+# -- EDIT BELOW THIS LINE --
 
 # Configuration
 NCURSES_VERSION="6.5"
@@ -8,14 +11,9 @@ NCURSES_URL="https://ftp.gnu.org/gnu/ncurses/ncurses-${NCURSES_VERSION}.tar.gz"
 PROCPS_REPO="https://gitlab.com/procps-ng/procps.git"
 EXPECTED_BINARIES="free hugetop pgrep vmstat watch sysctl slabtop pwdx pkill pmap pidwait pidof pgrep kill"
 
-mkdir -p /tmp/static_libs
-STATIC_LIBS_PATH=/tmp/static_libs
-
 build_libncurses() {
-	log "Building libncurses-dev dep..."
 	. fetch_archive $NCURSES_URL
 
-	log "Building ncurses"
 	./configure --prefix="$STATIC_LIBS_PATH" \
 		--host="$HOST" \
 		--without-ada \
@@ -34,7 +32,6 @@ build_libncurses() {
 }
 
 build_procps() {
-	log "Building procps"
 	. fetch_repo $PROCPS_REPO
 
 	./autogen.sh
@@ -56,8 +53,11 @@ build_procps() {
 	make LDFLAGS="-all-static -s" -j"$(nproc)"
 }
 
-build_libncurses
-build_procps
+log "Starting procps build process..."
+log "Building libncurses-dev dep..."
+wrunf build_libncurses
+log "Building procps"
+wrunf build_procps
 verify_build -p src -b "$EXPECTED_BINARIES"
 verify_build -p src/ps -b pscommand
 verify_build -p src/top -b top

@@ -1,13 +1,19 @@
 #!/bin/bash
 set -euo pipefail
 trap 'handle_err $LINENO' ERR
+. wrunf
+
+# -- EDIT BELOW THIS LINE --
 
 # Configuration
 TOYBOX_REPO="https://github.com/landley/toybox.git"
 
-log "Starting Toybox build process..."
-. fetch_repo $TOYBOX_REPO
+build_toybox() {
+	. fetch_repo $TOYBOX_REPO
+
+	LDFLAGS="--static -s" make defconfig toybox
+}
 
 log "Building Toybox"
-LDFLAGS="--static -s" make defconfig toybox
+wrunf build_toybox
 verify_build toybox

@@ -1,18 +1,20 @@
 #!/bin/bash
 set -euo pipefail
 trap 'handle_err $LINENO' ERR
+. wrunf
+
+# -- EDIT BELOW THIS LINE --
 
 # Configuration
 WEGGLI_REPO="https://github.com/weggli-rs/weggli.git"
 
 build_weggli() {
-	log "Starting weggli build process..."
 	. fetch_repo $WEGGLI_REPO
 
-	log "Building weggli"
-	cargo build --target aarch64-unknown-linux-musl --release
-	aarch64-linux-musleabi-strip target/aarch64-unknown-linux-musl/release/weggli
+	cargo build --target "$RUST_TARGET" --release
+	aarch64-linux-musleabi-strip "$RUST_REL/weggli"
 }
 
-build_weggli
-verify_build -b weggli -p "target/aarch64-unknown-linux-musl/release"
+log "Building weggli"
+wrunf build_weggli
+verify_build -b weggli -p "$RUST_REL/weggli"

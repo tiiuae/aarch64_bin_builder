@@ -1,12 +1,9 @@
 #!/bin/bash
-set -euo pipefail
 
 BINARIES=()
-CHECK_PATH=""
+CHECK_PATH="$(pwd)"
 
 verify_binaries() {
-	local exit_code=0
-
 	for item in "${BINARIES[@]}"; do
 		# Get just the binary name without the path
 		local binary_name
@@ -16,41 +13,41 @@ verify_binaries() {
 		local full_path="${CHECK_PATH:+$CHECK_PATH/}${item}"
 
 		if [ -f "$full_path" ]; then
-			log "${item} built successfully"
+			echo "  [OK] Building ${item}"
 
 			# Compress & copy the binary to `BINARIES_DIR`, flattening the structure
 			if file "$full_path" | grep -q "ELF"; then
 
 				if ! file "$full_path" | grep -q "64-bit"; then
-					log "${item} is not 64-bit"
+					echo "  [FAIL] ${item} is not 64-bit"
 					return 1
 				fi
 
 				if ! file "$full_path" | grep -q "ARM aarch64"; then
-					log "${item} is not ARM aarch64"
+					echo "[FAIL] ${item} is not ARM aarch64"
 					return 1
 				fi
 
 				if ! file "$full_path" | grep -q "statically linked"; then
-					log "${item} is not statically linked"
+					echo "  [FAIL] ${item} is not statically linked"
 					return 1
 				fi
 
 				if ! file "$full_path" | grep -q "stripped"; then
-					log "${item} is not stripped"
+					echo "  [FAIL] ${item} is not stripped"
 					return 1
 				fi
 
 				if ! upx --best --lzma --quiet "$full_path" 2>&1 | grep -q "AlreadyPackedException"; then
-					log "Successfully packed: $item"
+					echo "  [OK] Packing with UPX"
 				else
-					log "Skipping already packed binary: $item"
+					echo "  [WARN] Packing detected, skipping UPX for $item"
 				fi
 			fi
 			cp "$full_path" "${BINARIES_DIR}/${binary_name}"
-			log "${binary_name} copied to ${BINARIES_DIR}/${binary_name}"
+			echo "  [OK] Copying ${binary_name}"
 		else
-			log "${item} not found in ${CHECK_PATH}"
+			echo "  [FAIL] ${item} not found in ${CHECK_PATH}"
 			return 1
 		fi
 	done
@@ -90,6 +87,6 @@ if [ ${#BINARIES[@]} -eq 0 ]; then
 	exit 1
 fi
 
-log "Verifying build for $(printf '%s ' "${BINARIES[@]}") in ${CHECK_PATH:-$(pwd)}"
+log "Verifying build for: $(printf '%s ' "${BINARIES[@]}")"
 verify_binaries
 exit $?

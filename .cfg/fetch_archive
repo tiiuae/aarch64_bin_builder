@@ -1,7 +1,6 @@
 #!/bin/bash
-set -euo pipefail
 
-cd /tmp/
+cd /tmp/ || return 1
 
 ARCHIVE_URL=$1
 ARCHIVE=$(echo "${ARCHIVE_URL##*/}" | sed -E 's/\.tar(\.gz|\.bz2)?$//; s/\.tgz$//; s/\.zip$//')
@@ -48,6 +47,7 @@ if [ ! -d "$ARCHIVE" ]; then
 		handle_err $LINENO "Unknown archive format"
 	fi
 else
-	log "Archive already exists, skipping fetching"
+	echo "  [WARN] Archive already exists, skipping fetching"
 fi
-cd "$ARCHIVE"
+cd "$ARCHIVE" || return 1
+echo "  [OK]..."

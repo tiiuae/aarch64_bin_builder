@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 trap 'handle_err $LINENO' ERR
+. wrunf
+
+# -- EDIT BELOW THIS LINE --
 
 # Configuration
 OPENSSL_VERSION="1.1.1q"
@@ -9,15 +12,12 @@ NMAP_REPO="https://github.com/nmap/nmap.git"
 EXPECTED_BINARIES="nmap ncat/ncat nping/nping"
 
 build_openssl() {
-	log "Building openSSL dep..."
 	. fetch_archive $OPENSSL_URL
 	./Configure no-shared linux-aarch64 no-tests
 	make -j"$(nproc)"
-	log "Finished building static OpenSSL dependency"
 }
 
 build_nmap() {
-	log "Building Nmap"
 	. fetch_repo $NMAP_REPO
 
 	CFLAGS="-static -fPIC" \
@@ -37,8 +37,11 @@ build_nmap() {
 	make -j"$(nproc)"
 }
 
-build_openssl
-build_nmap
+log "Starting nmap build process..."
+log "Building openSSL dep..."
+wrunf build_openssl
+log "Building Nmap..."
+wrunf build_nmap
 verify_build -b "$EXPECTED_BINARIES"
 #NOTE: We need to manually package the nmap NSE scripts
 tar cfz "$BINARIES_DIR/nmap_usrsharenmap.tar.gz" nselib/* scripts/* docs/nmap.dtd nmap-mac-prefixes nmap-os-db nmap-protocols nmap-rpc nmap-service-probes nmap-services docs/nmap.xsl nse_main.lua

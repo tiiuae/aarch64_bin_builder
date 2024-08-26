@@ -1,18 +1,20 @@
 #!/bin/bash
 set -euo pipefail
 trap 'handle_err $LINENO' ERR
+. wrunf
+
+# -- EDIT BELOW THIS LINE --
 
 # Configuration
 RIPGREP_REPO="https://github.com/BurntSushi/ripgrep.git"
 
 build_ripgrep() {
-	log "Starting ripgrep build process..."
 	. fetch_repo $RIPGREP_REPO
 
-	log "Building ripgrep"
-	cargo build --target aarch64-unknown-linux-musl --release --features 'pcre2'
-	aarch64-linux-musleabi-strip target/aarch64-unknown-linux-musl/release/rg
+	cargo build --target "$RUST_TARGET" --release --features 'pcre2'
+	aarch64-linux-musleabi-strip "$RUST_REL/rg"
 }
 
-build_ripgrep
-verify_build -b rg -p "target/aarch64-unknown-linux-musl/release"
+log "Building ripgrep"
+wrunf build_ripgrep
+verify_build -b rg -p "$RUST_REL"

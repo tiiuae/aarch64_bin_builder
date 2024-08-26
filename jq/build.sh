@@ -1,15 +1,21 @@
 #!/bin/bash
 set -euo pipefail
 trap 'handle_err $LINENO' ERR
+. wrunf
+
+# -- EDIT BELOW THIS LINE --
 
 # Configuration
 export JQ_VERSION="1.7.1"
 export JQ_URL="https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq-${JQ_VERSION}.tar.gz"
 
-log "Starting JQ build process..."
-. fetch_archive $JQ_URL
+build_jq() {
+	. fetch_archive $JQ_URL
 
-log "Building JQ"
-./configure --host="$HOST" --with-oniguruma=builtin
-make LDFLAGS="-all-static" -j"$(nproc)"
+	./configure --host="$HOST" --with-oniguruma=builtin
+	make LDFLAGS="-all-static" -j"$(nproc)"
+}
+
+log "Building jq"
+wrunf build_jq
 verify_build jq

@@ -1,20 +1,22 @@
 #!/bin/bash
 set -euo pipefail
 trap 'handle_err $LINENO' ERR
+. wrunf
+
+# -- EDIT BELOW THIS LINE --
 
 # Configuration
 XH_REPO="https://github.com/ducaale/xh.git"
 
 build_xh() {
-	log "Starting xh build process..."
 	. fetch_repo $XH_REPO
 
-	log "Building xh"
 	unset CC
 	unset CXX
-	cargo build --target aarch64-unknown-linux-musl --release
-	aarch64-linux-musleabi-strip target/aarch64-unknown-linux-musl/release/xh
+	cargo build --target "$RUST_TARGET" --release
+	aarch64-linux-musleabi-strip "$RUST_REL/xh"
 }
 
-build_xh
-verify_build -b xh -p "target/aarch64-unknown-linux-musl/release"
+log "Building xh"
+wrunf build_xh
+verify_build -b xh -p "$RUST_REL/xh"
