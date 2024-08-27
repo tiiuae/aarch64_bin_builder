@@ -6,10 +6,10 @@ trap 'handle_err $LINENO' ERR
 # -- EDIT BELOW THIS LINE --
 
 # Configuration
-export OPENSSL_VERSION="1.1.1q"
-export OPENSSL_URL="https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz"
-export NMAP_REPO="https://github.com/nmap/nmap.git"
-export EXPECTED_BINARIES="nmap ncat/ncat nping/nping"
+OPENSSL_VERSION="1.1.1q"
+OPENSSL_URL="https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz"
+NMAP_REPO="https://github.com/nmap/nmap.git"
+EXPECTED_BINARIES="nmap ncat/ncat nping/nping"
 
 build_openssl() {
 	. fetch_archive $OPENSSL_URL
