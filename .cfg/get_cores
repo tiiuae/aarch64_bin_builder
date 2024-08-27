@@ -1,7 +1,7 @@
 #!/bin/bash
 MAKE_JOBS=""
 MAKE_JOBS="$(
-    NPROC=$({ getconf _NPROCESSORS_ONLN || echo 3; } 2>/dev/null)
-    echo $((NPROC > 2 ? NPROC - 4 : 1))
+	NPROC=$({ getconf _NPROCESSORS_ONLN || echo 3; } 2>/dev/null)
+	echo $((NPROC > 2 ? NPROC - 4 : 1))
 )"
 echo "$MAKE_JOBS"
