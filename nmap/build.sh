@@ -20,9 +20,9 @@ build_openssl() {
 build_nmap() {
 	. fetch_repo $NMAP_REPO
 
-	CFLAGS="-static -fPIC" \
-		CXXFLAGS="-static -fPIC -static-libstdc++" \
-		LD=/opt/cross/bin/aarch64-linux-musleabi-ld \
+	CC='aarch64-linux-musleabi-gcc -static -fPIC' \
+		CXX='aarch64-linux-musleabi-g++ -static -static-libstdc++ -fPIC' \
+		LD=aarch64-linux-musleabi-ld \
 		LDFLAGS="-L/tmp/openssl-${OPENSSL_VERSION} -s" \
 		./configure --without-ndiff \
 		--without-zenmap \
