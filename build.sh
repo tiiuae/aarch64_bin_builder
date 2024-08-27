@@ -54,24 +54,20 @@ cleanup_docker() {
 	docker image prune -f
 }
 
-if [ -n "$1" ]; then
-	if [ -d "$1" ]; then
-		build_app "$1"
-	else
-		echo "Directory $1 does not exist"
-		exit 1
-	fi
+if [[ $# -eq 0 ]]; then
+	echo "Building all applications..."
+	for dir in */; do
+		build_app "$dir"
+	done
+elif [[ $1 == "--cleanup" ]]; then
+	cleanup_docker
 else
-	if [ "$1" = "--cleanup" ]; then
-		cleanup_docker
-		exit 0
-	else
-		echo "Building all applications..."
-		for dir in */; do
-			if [ -f "${dir}build.sh" ] && [ -f "${dir}Dockerfile" ]; then
-				build_app "$dir"
-			fi
-		done
-	fi
+	for arg in "$@"; do
+		if [[ -d $arg ]]; then
+			build_app "$arg"
+		else
+			echo "Application directory not found: $arg" >&2
+			exit 1
+		fi
+	done
 fi
-rm -Rf "$TMP_LOG_DIR"

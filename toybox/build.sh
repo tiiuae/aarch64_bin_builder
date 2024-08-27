@@ -11,7 +11,7 @@ TOYBOX_REPO="https://github.com/landley/toybox.git"
 build_toybox() {
 	. fetch_repo $TOYBOX_REPO
 
-	LDFLAGS="--static -s" make defconfig toybox
+	NOSTRIP="y" make LDFLAGS="--static -s" defconfig toybox
 }
 
 log "Building Toybox"
