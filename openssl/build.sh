@@ -21,5 +21,5 @@ build_openssl() {
 }
 
 log "Building openSSL"
-wrun build_openssl
+wrunf build_openssl
 verify_build -b "openssl" -p "apps"
