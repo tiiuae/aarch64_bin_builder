@@ -5,7 +5,6 @@ BINARIES_DIR="$(pwd)/binaries"
 mkdir -p "$BINARIES_DIR"
 
 TMP_LOG_DIR=$(mktemp -d)
-TMP_LOG="$TMP_LOG_DIR/build.log"
 
 # Function to build a single application
 build_app() {
@@ -14,6 +13,12 @@ build_app() {
 	app_name=$(basename "$app_dir")
 	echo "Building $app_name..."
 
+	# Create a unique log file for this build
+	local individual_log="$TMP_LOG_DIR/${app_name}_build.log"
+
+	# Shared build.log that will be accessible inside the container
+	local shared_build_log="$TMP_LOG_DIR/build.log"
+
 	# Build the Docker image with BuildKit enabled
 	docker build --no-cache -t "${app_name}-builder" "$app_dir"
 
@@ -21,15 +26,19 @@ build_app() {
 	docker run --rm \
 		-v "$(pwd):/repo" \
 		-v "${app_name}-cache:/build-cache" \
-		-v "$TMP_LOG_DIR:/build_log" \
+		-v "$shared_build_log:/build_log/build.log" \
 		"${app_name}-builder"
 	exit_status=$?
+
+	# Copy the shared log to the individual log and append any docker output
+	cp "$shared_build_log" "$individual_log"
+	echo "Docker build exit status: $exit_status" >>"$individual_log"
 
 	# If the exit status is non-zero (error occurred)
 	if [ $exit_status -ne 0 ]; then
 		echo "Error occurred. Output:"
-		cat "$TMP_LOG"
-		rm -Rf "$TMP_LOG_DIR"
+		cat "$individual_log"
+		echo "Full log available at: $individual_log"
 		exit $exit_status
 	fi
 
@@ -54,6 +63,12 @@ cleanup_docker() {
 	docker image prune -f
 }
 
+# Cleanup function to remove all logs
+cleanup_logs() {
+	echo "Cleaning up build logs..."
+	rm -rf "$TMP_LOG_DIR"
+}
+
 if [[ $# -eq 0 ]]; then
 	echo "Building all applications..."
 	for dir in */; do
@@ -63,6 +78,7 @@ if [[ $# -eq 0 ]]; then
 	done
 elif [[ $1 == "--cleanup" ]]; then
 	cleanup_docker
+	cleanup_logs
 else
 	for arg in "$@"; do
 		if [[ -d $arg ]]; then
