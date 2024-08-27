@@ -14,7 +14,7 @@ export EXPECTED_BINARIES="nmap ncat/ncat nping/nping"
 build_openssl() {
 	. fetch_archive $OPENSSL_URL
 	./Configure no-shared linux-aarch64 no-tests
-	make -j"$MAKE_JOBS"
+	make -j"$(/bin/get_cores)"
 }
 
 build_nmap() {
@@ -34,7 +34,7 @@ build_nmap() {
 	# Don't build the libpcap.so file
 	sed -i -e 's/shared\: /shared\: #/' libpcap/Makefile
 	sed -i -e 's/shared\: /shared\: #/' libz/Makefile
-	make -j"$MAKE_JOBS"
+	make -j"$(/bin/get_cores)"
 }
 
 log "Starting nmap build process..."

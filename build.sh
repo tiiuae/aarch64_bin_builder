@@ -13,32 +13,34 @@ build_app() {
 	app_name=$(basename "$app_dir")
 	echo "Building $app_name..."
 
-	# Create a unique log file for this build
-	local individual_log="$TMP_LOG_DIR/${app_name}_build.log"
+	# Create a temporary log file for this build
+	local temp_build_log
+	temp_build_log=$(mktemp)
 
-	# Shared build.log that will be accessible inside the container
-	local shared_build_log="$TMP_LOG_DIR/build.log"
-
-	# Build the Docker image with BuildKit enabled
+	# Build the Docker image
 	docker build --no-cache -t "${app_name}-builder" "$app_dir"
 
-	# Run the container to build the application, using a named volume for caching
+	# Run the container to build the application
 	docker run --rm \
 		-v "$(pwd):/repo" \
 		-v "${app_name}-cache:/build-cache" \
-		-v "$shared_build_log:/build_log/build.log" \
+		-v "$temp_build_log:/build_log/build.log" \
 		"${app_name}-builder"
 	exit_status=$?
 
-	# Copy the shared log to the individual log and append any docker output
-	cp "$shared_build_log" "$individual_log"
-	echo "Docker build exit status: $exit_status" >>"$individual_log"
+	# Copy the temporary log to a permanent location and append the exit status
+	local permanent_log="$TMP_LOG_DIR/${app_name}_build.log"
+	cp "$temp_build_log" "$permanent_log"
+	echo "Docker build exit status: $exit_status" >>"$permanent_log"
+
+	# Remove the temporary log file
+	rm "$temp_build_log"
 
 	# If the exit status is non-zero (error occurred)
 	if [ $exit_status -ne 0 ]; then
 		echo "Error occurred. Output:"
-		cat "$individual_log"
-		echo "Full log available at: $individual_log"
+		cat "$permanent_log"
+		echo "Full log available at: $permanent_log"
 		exit $exit_status
 	fi
 

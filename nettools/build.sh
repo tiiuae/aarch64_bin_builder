@@ -17,7 +17,7 @@ build_nettools() {
 
 	CFLAGS="-I/usr/include -I/usr/include/bluetooth" \
 		LDFLAGS="--static -s" \
-		make -j"$MAKE_JOBS"
+		make -j"$(/bin/get_cores)"
 }
 
 log "Building net-tools"

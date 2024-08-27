@@ -13,7 +13,7 @@ OPENSSL_URL="https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz"
 build_openssl() {
 	. fetch_archive $OPENSSL_URL
 	./Configure no-shared linux-aarch64 no-tests --prefix="$STATIC_LIBS_PATH"
-	make -j"$MAKE_JOBS"
+	make -j"$(/bin/get_cores)"
 	make install_sw
 }
 

@@ -36,7 +36,7 @@ build_binutils() {
 		--disable-gprof \
 		--disable-gprofng \
 		--disable-nls
-	make LDFLAGS="--static -s" -j"$MAKE_JOBS"
+	make LDFLAGS="--static -s" -j"$(/bin/get_cores)"
 }
 
 log "Building Binutils"

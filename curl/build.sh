@@ -21,7 +21,7 @@ build_cares() {
 		--disable-shared \
 		--enable-static \
 		--prefix=/tmp/cares-install
-	make LDFLAGS="-static -s" -j"$MAKE_JOBS"
+	make LDFLAGS="-static -s" -j"$(/bin/get_cores)"
 	make install
 }
 
@@ -36,7 +36,7 @@ build_wolfssl() {
 		--prefix=/tmp/wolfssl-install \
 		--enable-tls13 \
 		--enable-curl
-	make LDFLAGS="-static -s" -j"$MAKE_JOBS"
+	make LDFLAGS="-static -s" -j"$(/bin/get_cores)"
 	make install
 }
 
@@ -83,7 +83,7 @@ build_curl() {
 
 	make LDFLAGS="-all-static -L/tmp/wolfssl-install/lib -L/tmp/cares-install/lib" \
 		LIBS="-ldl -lm -lrt -lpthread -static /tmp/wolfssl-install/lib/libwolfssl.a /tmp/cares-install/lib/libcares.a" \
-		-j"$MAKE_JOBS"
+		-j"$(/bin/get_cores)"
 }
 
 log "Starting cURL build process..."
