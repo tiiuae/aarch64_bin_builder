@@ -27,7 +27,7 @@ build_libncurses() {
 		--with-terminfo-dirs="/etc/terminfo:/lib/terminfo:/usr/share/terminfo" \
 		--disable-db-install \
 		--enable-widec
-	make -j"$(nproc)"
+	make -j"$MAKE_JOBS"
 	make install || true
 }
 
@@ -50,7 +50,7 @@ build_procps() {
 		--with-ncurses \
 		--disable-nls
 
-	make LDFLAGS="-all-static -s" -j"$(nproc)"
+	make LDFLAGS="-all-static -s" -j"$MAKE_JOBS"
 }
 
 log "Starting procps build process..."

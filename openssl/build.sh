@@ -17,7 +17,7 @@ build_openssl() {
 		linux-aarch64 \
 		no-tests \
 		--cross-compile-prefix=/opt/cross/bin/aarch64-linux-musleabi-
-	make -j"$(nproc)"
+	make -j"$MAKE_JOBS"
 }
 
 log "Building openSSL"

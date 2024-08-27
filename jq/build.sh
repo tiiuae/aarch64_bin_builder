@@ -13,7 +13,7 @@ build_jq() {
 	. fetch_archive $JQ_URL
 
 	./configure --host="$HOST" --with-oniguruma=builtin
-	make LDFLAGS="-all-static" -j"$(nproc)"
+	make LDFLAGS="-all-static" -j"$MAKE_JOBS"
 }
 
 log "Building jq"

@@ -13,7 +13,7 @@ build_tar() {
 	. fetch_archive $TAR_REPO
 
 	./configure --host="$HOST"
-	make -j"$(nproc)"
+	make -j"$MAKE_JOBS"
 }
 
 log "Building Tar"

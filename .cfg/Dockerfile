@@ -93,6 +93,9 @@ ENV CC_aarch64_unknown_linux_musl="aarch64-linux-musleabi-gcc"
 ENV RUSTFLAGS="-C opt-level=z -C target-feature=+crt-static -C panic=abort -C lto=fat -C codegen-units=1 -C embed-bitcode=yes"
 ENV RUST_REL="target/aarch64-unknown-linux-musl/release"
 
+# Set MAKE_JOBS environment variable
+RUN echo "export MAKE_JOBS=$(NPROC=$({ getconf _NPROCESSORS_ONLN || echo 3; } 2>/dev/null); echo $(( NPROC > 2 ? NPROC - 2 : 1 )))" >> ~/.bashrc
+
 WORKDIR /build
 
 CMD ["/bin/bash"]

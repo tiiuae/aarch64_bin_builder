@@ -13,7 +13,7 @@ build_gzip() {
 	. fetch_archive $GZIP_REPO
 
 	./configure --host="$HOST"
-	make -j"$(nproc)"
+	make -j"$MAKE_JOBS"
 }
 
 log "Building Gzip"

@@ -19,7 +19,7 @@ build_libnl() {
 	. fetch_repo $LIBNL_URL
 	mkdir build && cd build
 	cmake ..
-	make -j"$(nproc)"
+	make -j"$MAKE_JOBS"
 	if [ ! -d "$STATIC_LIBS_PATH/lib" ]; then
 		mkdir -p "$STATIC_LIBS_PATH/lib"
 	fi
@@ -38,14 +38,14 @@ build_libpcap() {
 		--enable-ipv6 \
 		--host="$HOST" \
 		--with-pcap=linux
-	make -j"$(nproc)"
+	make -j"$MAKE_JOBS"
 	make install
 }
 
 build_openssl() {
 	. fetch_archive $OPENSSL_URL
 	./Configure no-shared linux-aarch64 no-tests --prefix="$STATIC_LIBS_PATH"
-	make -j"$(nproc)"
+	make -j"$MAKE_JOBS"
 	make install_sw
 }
 
@@ -56,7 +56,7 @@ build_libcap_ng() {
 		--prefix="$STATIC_LIBS_PATH" \
 		--disable-shared \
 		--host="$HOST" || true
-	make -j"$(nproc)"
+	make -j"$MAKE_JOBS"
 	make install
 }
 
@@ -70,7 +70,7 @@ build_tcpdump() {
 		--with-cap-ng \
 		--with-crypto="$STATIC_LIBS_PATH"
 
-	make -j"$(nproc)"
+	make -j"$MAKE_JOBS"
 }
 
 log "Starting tcpdump build process..."

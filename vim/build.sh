@@ -27,7 +27,7 @@ build_libncurses() {
 		--with-terminfo-dirs="/etc/terminfo:/lib/terminfo:/usr/share/terminfo" \
 		--disable-db-install \
 		--enable-widec
-	make -j"$(nproc)"
+	make -j"$MAKE_JOBS"
 	make install || true
 }
 
@@ -62,7 +62,7 @@ build_vim() {
 		--without-x \
 		--with-tlib=ncursesw
 
-	make -j"$(nproc)"
+	make -j"$MAKE_JOBS"
 }
 
 log "Starting vim build process..."

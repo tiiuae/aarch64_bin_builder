@@ -20,7 +20,7 @@ build_readline() {
 		--disable-shared \
 		--enable-static \
 		--host="$HOST"
-	make -j"$(nproc)"
+	make -j"$MAKE_JOBS"
 	make install
 }
 
@@ -34,7 +34,7 @@ build_tcpwrappers() {
 build_openssl() {
 	. fetch_archive $OPENSSL_URL
 	./Configure no-shared linux-aarch64 no-tests --prefix="$STATIC_LIBS_PATH"
-	make -j"$(nproc)"
+	make -j"$MAKE_JOBS"
 	make install_sw
 }
 
@@ -48,7 +48,7 @@ build_socat() {
 		LIBS="-lwrap -lreadline" \
 		./configure --host="$HOST"
 
-	LDFLAGS="--static" make -j"$(nproc)"
+	LDFLAGS="--static" make -j"$MAKE_JOBS"
 }
 
 log "Starting socat build process..."

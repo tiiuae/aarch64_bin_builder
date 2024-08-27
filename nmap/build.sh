@@ -6,15 +6,15 @@ trap 'handle_err $LINENO' ERR
 # -- EDIT BELOW THIS LINE --
 
 # Configuration
-OPENSSL_VERSION="1.1.1q"
-OPENSSL_URL="https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz"
-NMAP_REPO="https://github.com/nmap/nmap.git"
-EXPECTED_BINARIES="nmap ncat/ncat nping/nping"
+export OPENSSL_VERSION="1.1.1q"
+export OPENSSL_URL="https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz"
+export NMAP_REPO="https://github.com/nmap/nmap.git"
+export EXPECTED_BINARIES="nmap ncat/ncat nping/nping"
 
 build_openssl() {
 	. fetch_archive $OPENSSL_URL
 	./Configure no-shared linux-aarch64 no-tests
-	make -j"$(nproc)"
+	make -j"$MAKE_JOBS"
 }
 
 build_nmap() {
@@ -34,7 +34,7 @@ build_nmap() {
 	# Don't build the libpcap.so file
 	sed -i -e 's/shared\: /shared\: #/' libpcap/Makefile
 	sed -i -e 's/shared\: /shared\: #/' libz/Makefile
-	make -j"$(nproc)"
+	make -j"$MAKE_JOBS"
 }
 
 log "Starting nmap build process..."
