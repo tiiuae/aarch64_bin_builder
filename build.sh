@@ -57,7 +57,9 @@ cleanup_docker() {
 if [[ $# -eq 0 ]]; then
 	echo "Building all applications..."
 	for dir in */; do
-		build_app "$dir"
+		if [ "$dir" != "$(basename "$BINARIES_DIR")" ]; then
+			build_app "$dir"
+		fi
 	done
 elif [[ $1 == "--cleanup" ]]; then
 	cleanup_docker
