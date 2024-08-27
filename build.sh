@@ -74,7 +74,7 @@ cleanup_logs() {
 if [[ $# -eq 0 ]]; then
 	echo "Building all applications..."
 	for dir in */; do
-		if [ "$dir" != "$(basename "$BINARIES_DIR")" ]; then
+		if [ "$dir" != "$(basename "$BINARIES_DIR")/" ]; then
 			build_app "$dir"
 		fi
 	done
