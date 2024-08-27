@@ -38,10 +38,17 @@ verify_binaries() {
 					return 1
 				fi
 
-				if ! upx --best --lzma --quiet "$full_path" 2>&1 | grep -q "AlreadyPackedException"; then
+				# NOTE: Sometimes production binaries are not writable, which is required by UPX
+				chmod +w "$full_path"
+				upx_output=$(upx --best --lzma --quiet "$full_path" 2>&1)
+				upx_exit_code=$?
+				if [ $upx_exit_code -eq 0 ]; then
 					echo "  [OK] Packing with UPX"
+				elif echo "$upx_output" | grep -q "AlreadyPackedException"; then
+					echo "  [WARN] UPX detected, skipping UPX for $item"
 				else
-					echo "  [WARN] Packing detected, skipping UPX for $item"
+					printf "  [FAIL] UPX failed for %s $item:\n\n%s", "$item", "$upx_output"
+					return 1
 				fi
 			fi
 			cp "$full_path" "${BINARIES_DIR}/${binary_name}"
