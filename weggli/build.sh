@@ -17,4 +17,4 @@ build_weggli() {
 
 log "Building weggli"
 wrunf build_weggli
-verify_build -b weggli -p "$RUST_REL/weggli"
+verify_build -b weggli -p "$RUST_REL"
