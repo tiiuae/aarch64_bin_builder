@@ -39,6 +39,6 @@ build_binutils() {
 	make LDFLAGS="--static -s" -j"$(/bin/get_cores)"
 }
 
-log "Building Binutils"
+log "Building binutils"
 wrunf build_binutils
 verify_build -b "$EXPECTED_BINS" -p binutils
