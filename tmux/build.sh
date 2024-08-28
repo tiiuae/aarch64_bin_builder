@@ -8,8 +8,19 @@ trap 'handle_err $LINENO' ERR
 # Configuration
 NCURSES_VERSION="6.5"
 NCURSES_URL="https://ftp.gnu.org/gnu/ncurses/ncurses-${NCURSES_VERSION}.tar.gz"
-PROCPS_REPO="https://gitlab.com/procps-ng/procps.git"
-EXPECTED_BINARIES="free hugetop pgrep vmstat watch sysctl slabtop pwdx pkill pmap pidwait pidof kill ps/pscommand top/top"
+LIBEVENT_REPO="https://github.com/libevent/libevent.git"
+TMUX_REPO="https://github.com/tmux/tmux.git"
+
+build_libevent() {
+	. fetch_repo $LIBEVENT_REPO
+
+	./autogen.sh
+	./configure --prefix="$STATIC_LIBS_PATH" \
+		--host="$HOST"
+
+	make -j"$(/bin/get_cores)"
+	make install
+}
 
 build_libncurses() {
 	. fetch_archive $NCURSES_URL
@@ -31,31 +42,26 @@ build_libncurses() {
 	make install
 }
 
-build_procps() {
-	. fetch_repo $PROCPS_REPO
+build_tmux() {
+	. fetch_repo $TMUX_REPO
 
 	./autogen.sh
 	CFLAGS="-static -s -I$STATIC_LIBS_PATH/include" \
-		CPPFLAGS="-I$STATIC_LIBS_PATH/include" \
 		LDFLAGS="-static -s -L$STATIC_LIBS_PATH/lib" \
-		LIBS="-static" \
-		NCURSES_CFLAGS="-I$STATIC_LIBS_PATH/include/ncursesw" \
-		NCURSES_LIBS="-L$STATIC_LIBS_PATH/lib -lncursesw" \
-		ac_cv_func_malloc_0_nonnull=yes \
-		ac_cv_func_realloc_0_nonnull=yes \
+		LIBNCURSES_CFLAGS="-I$STATIC_LIBS_PATH/include/ncursesw" \
+		LIBNCURSES_LIBS="-L$STATIC_LIBS_PATH/lib -lncursesw" \
 		./configure \
 		--enable-static \
-		--disable-shared \
-		--host="$HOST" \
-		--with-ncurses \
-		--disable-nls
+		--host="$HOST"
 
-	make LDFLAGS="-all-static -s" -j"$(/bin/get_cores)"
+	make -j"$(/bin/get_cores)"
 }
 
-log "Starting procps build process..."
+log "Starting tmux build process..."
+log "Building libevent dep..."
+wrunf build_libevent
 log "Building libncurses-dev dep..."
 wrunf build_libncurses
-log "Building procps"
-wrunf build_procps
-verify_build -p src -b "$EXPECTED_BINARIES"
+log "Building tmux"
+wrunf build_tmux
+verify_build tmux
