@@ -85,27 +85,46 @@ dl() {
 			continue
 		fi
 
-		# Process each matching URL
-		echo "$asset_urls" | while read -r asset_url; do
+		# Use command substitution to capture output and check for exact match
+		exact_match=$(echo "$asset_urls" | while IFS= read -r asset_url; do
 			filename=$(basename "$asset_url")
+			if [ "$filename" = "$binary" ]; then
+				echo "$asset_url"
+				break
+			fi
+		done)
 
-			# Check if it's an exact match or starts with the binary name
-			case "$filename" in
-			"$binary" | "$binary"*)
-				echo "[*] Downloading $filename..."
-				if _download "$asset_url" "$TEMP_DIR/$filename"; then
-					chmod +x "$TEMP_DIR/$filename"
-					echo "  [+] Successfully installed $filename to $TEMP_DIR/$filename"
-					add_to_path
-				else
-					echo "  [-] Error: Failed to download $filename." >&2
-				fi
-				;;
-			*)
-				# Skip files that don't match the criteria
-				;;
-			esac
-		done
+		if [ -n "$exact_match" ]; then
+			# Process exact match
+			filename=$(basename "$exact_match")
+			echo "[*] Downloading $filename (exact match)..."
+			if _download "$exact_match" "$TEMP_DIR/$filename"; then
+				chmod +x "$TEMP_DIR/$filename"
+				echo "  [+] Successfully installed $filename to $TEMP_DIR/$filename"
+				add_to_path
+			else
+				echo "  [-] Error: Failed to download $filename." >&2
+			fi
+		else
+			# Apply fuzzy matching
+			echo "[*] No exact match found. Applying fuzzy matching..."
+			echo "$asset_urls" | while IFS= read -r asset_url; do
+				filename=$(basename "$asset_url")
+				# Check if it starts with the binary name
+				case "$filename" in
+				"$binary"*)
+					echo "[*] Downloading $filename (fuzzy match)..."
+					if _download "$asset_url" "$TEMP_DIR/$filename"; then
+						chmod +x "$TEMP_DIR/$filename"
+						echo "  [+] Successfully installed $filename to $TEMP_DIR/$filename"
+						add_to_path
+					else
+						echo "  [-] Error: Failed to download $filename." >&2
+					fi
+					;;
+				esac
+			done
+		fi
 	done
 }
 
