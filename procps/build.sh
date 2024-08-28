@@ -6,10 +6,10 @@ trap 'handle_err $LINENO' ERR
 # -- EDIT BELOW THIS LINE --
 
 # Configuration
-NCURSES_VERSION="6.5"
-NCURSES_URL="https://ftp.gnu.org/gnu/ncurses/ncurses-${NCURSES_VERSION}.tar.gz"
-PROCPS_REPO="https://gitlab.com/procps-ng/procps.git"
-EXPECTED_BINARIES="free hugetop pgrep vmstat watch sysctl slabtop pwdx pkill pmap pidwait pidof pgrep kill"
+export NCURSES_VERSION="6.5"
+export NCURSES_URL="https://ftp.gnu.org/gnu/ncurses/ncurses-${NCURSES_VERSION}.tar.gz"
+export PROCPS_REPO="https://gitlab.com/procps-ng/procps.git"
+export EXPECTED_BINARIES="free hugetop pgrep vmstat watch sysctl slabtop pwdx pkill pmap pidwait pidof kill ps/pscommand top/top"
 
 build_libncurses() {
 	. fetch_archive $NCURSES_URL
@@ -35,7 +35,7 @@ build_procps() {
 	. fetch_repo $PROCPS_REPO
 
 	./autogen.sh
-	CFLAGS="-static -I$STATIC_LIBS_PATH/include" \
+	CFLAGS="-static -s -I$STATIC_LIBS_PATH/include" \
 		CPPFLAGS="-I$STATIC_LIBS_PATH/include" \
 		LDFLAGS="-static -s -L$STATIC_LIBS_PATH/lib" \
 		LIBS="-static" \
@@ -59,5 +59,3 @@ wrunf build_libncurses
 log "Building procps"
 wrunf build_procps
 verify_build -p src -b "$EXPECTED_BINARIES"
-verify_build -p src/ps -b pscommand
-verify_build -p src/top -b top

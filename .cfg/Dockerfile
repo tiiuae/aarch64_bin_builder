@@ -94,6 +94,9 @@ ENV CC_aarch64_unknown_linux_musl="aarch64-linux-musleabi-gcc"
 ENV RUSTFLAGS="-C opt-level=z -C target-feature=+crt-static -C panic=abort -C lto=fat -C codegen-units=1 -C embed-bitcode=yes"
 ENV RUST_REL="target/aarch64-unknown-linux-musl/release"
 
+# Set up build log
+ENV BUILD_LOG="/build.log"
+
 WORKDIR /build
 
 CMD ["/bin/bash"]

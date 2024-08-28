@@ -24,7 +24,7 @@ build_app() {
 	docker run --rm \
 		-v "$(pwd):/repo" \
 		-v "${app_name}-cache:/build-cache" \
-		-v "$temp_build_log:/build_log/build.log" \
+		-v "$temp_build_log:/build.log" \
 		"${app_name}-builder"
 	exit_status=$?
 
