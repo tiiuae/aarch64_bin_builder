@@ -17,10 +17,20 @@ verify_binaries() {
 
 		# Check if the item contains a path separator
 		if [[ "$item" == *"/"* ]]; then
-			# If it does, use the item as is
-			full_path="$item"
+			# Extract the first part of the path
+			local first_part
+			first_part=$(echo "$item" | cut -d'/' -f1)
+
+			# Check if the first part exists as a directory in CHECK_PATH
+			if [ -n "$CHECK_PATH" ] && [ -d "$CHECK_PATH/$first_part" ]; then
+				# If it does, concatenate CHECK_PATH with item
+				full_path="$CHECK_PATH/$item"
+			else
+				# If it doesn't, use item as is
+				full_path="$item"
+			fi
 		else
-			# If it doesn't, prepend CHECK_PATH if it's set
+			# If it doesn't contain a slash, prepend CHECK_PATH if it's set
 			full_path="${CHECK_PATH:+$CHECK_PATH/}${item}"
 		fi
 
