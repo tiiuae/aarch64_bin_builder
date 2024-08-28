@@ -5,7 +5,6 @@
 wrunf() {
 	local func_name=$1
 	shift
-	local log_file="/build_log/build.log"
 	local exit_code=0
 
 	# Save current options
@@ -23,10 +22,10 @@ wrunf() {
 			if [[ $old_opts == *o* ]]; then set -o pipefail; fi
 
 			$func_name "$@"
-		} >>"$log_file" 2>&1
+		} >>"$BUILD_LOG" 2>&1
 		exit_code=$?
 	else
-		echo "[-] Error: Function $func_name does not exist" >>"$log_file" 2>&1
+		echo "[-] Error: Function $func_name does not exist" >>"$BUILD_LOG" 2>&1
 		exit_code=1
 	fi
 

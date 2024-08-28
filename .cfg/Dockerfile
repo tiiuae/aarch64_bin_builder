@@ -69,6 +69,7 @@ COPY .cfg/handle_err /bin/
 COPY .cfg/verify_build /bin/
 COPY .cfg/wrun /bin/
 COPY .cfg/wrunf /bin/
+COPY .cfg/get_cores /bin/
 
 # Enable cargo and rust toolchain
 ENV PATH=$PATH:/opt/cross/
@@ -92,6 +93,9 @@ ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER="aarch64-linux-musleabi-gcc"
 ENV CC_aarch64_unknown_linux_musl="aarch64-linux-musleabi-gcc"
 ENV RUSTFLAGS="-C opt-level=z -C target-feature=+crt-static -C panic=abort -C lto=fat -C codegen-units=1 -C embed-bitcode=yes"
 ENV RUST_REL="target/aarch64-unknown-linux-musl/release"
+
+# Set up build log
+ENV BUILD_LOG="/build.log"
 
 WORKDIR /build
 

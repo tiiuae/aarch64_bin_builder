@@ -19,4 +19,4 @@ build_xh() {
 
 log "Building xh"
 wrunf build_xh
-verify_build -b xh -p "$RUST_REL/xh"
+verify_build -b xh -p "$RUST_REL"

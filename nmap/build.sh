@@ -14,15 +14,15 @@ EXPECTED_BINARIES="nmap ncat/ncat nping/nping"
 build_openssl() {
 	. fetch_archive $OPENSSL_URL
 	./Configure no-shared linux-aarch64 no-tests
-	make -j"$(nproc)"
+	make -j"$(/bin/get_cores)"
 }
 
 build_nmap() {
 	. fetch_repo $NMAP_REPO
 
-	CFLAGS="-static -fPIC" \
-		CXXFLAGS="-static -fPIC -static-libstdc++" \
-		LD=/opt/cross/bin/aarch64-linux-musleabi-ld \
+	CC='aarch64-linux-musleabi-gcc -static -fPIC' \
+		CXX='aarch64-linux-musleabi-g++ -static -static-libstdc++ -fPIC' \
+		LD=aarch64-linux-musleabi-ld \
 		LDFLAGS="-L/tmp/openssl-${OPENSSL_VERSION} -s" \
 		./configure --without-ndiff \
 		--without-zenmap \
@@ -34,7 +34,7 @@ build_nmap() {
 	# Don't build the libpcap.so file
 	sed -i -e 's/shared\: /shared\: #/' libpcap/Makefile
 	sed -i -e 's/shared\: /shared\: #/' libz/Makefile
-	make -j"$(nproc)"
+	make -j"$(/bin/get_cores)"
 }
 
 log "Starting nmap build process..."

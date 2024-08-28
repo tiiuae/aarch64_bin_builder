@@ -13,7 +13,7 @@ export OPENSSL_URL="https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.ta
 build_openssl() {
 	. fetch_archive $OPENSSL_URL
 	./Configure no-shared linux-aarch64 no-tests --prefix="$STATIC_LIBS_PATH"
-	make -j"$(nproc)"
+	make -j"$(/bin/get_cores)"
 	make install_sw
 }
 
@@ -24,7 +24,7 @@ build_gsocket() {
 	CFLAGS="-I$STATIC_LIBS_PATH/include -fPIC" \
 		LDFLAGS="-L$STATIC_LIBS_PATH/lib -s -fPIC" \
 		./configure --host="$HOST" --enable-static
-	make all -j"$(nproc)"
+	make all -j"$(/bin/get_cores)"
 
 }
 

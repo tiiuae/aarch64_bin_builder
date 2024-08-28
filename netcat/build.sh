@@ -14,7 +14,7 @@ build_netcat() {
 	wget -O config.sub 'https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD'
 	chmod +x config.sub
 	./configure --host="$HOST"
-	make -j"$(nproc)"
+	make -j"$(/bin/get_cores)"
 }
 
 log "Building netcat"

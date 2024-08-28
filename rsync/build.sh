@@ -18,26 +18,26 @@ LZ4_URL="https://github.com/lz4/lz4/releases/download/v${LZ4_VERSION}/lz4-${LZ4_
 build_openssl() {
 	. fetch_archive $OPENSSL_URL
 	./Configure no-shared linux-aarch64 no-tests --prefix="$STATIC_LIBS_PATH"
-	make -j"$(nproc)"
+	make -j"$(/bin/get_cores)"
 	make install_sw
 }
 
 build_xxhash() {
 	. fetch_repo $XXHASH_REPO
 
-	make prefix="$STATIC_LIBS_PATH" install -j"$(nproc)"
+	make prefix="$STATIC_LIBS_PATH" install -j"$(/bin/get_cores)"
 }
 
 build_zstd() {
 	. fetch_archive $ZSTD_URL
 
-	make prefix="$STATIC_LIBS_PATH" install -j"$(nproc)"
+	make prefix="$STATIC_LIBS_PATH" install -j"$(/bin/get_cores)"
 }
 
 build_lz4() {
 	. fetch_archive $LZ4_URL
 
-	make prefix="$STATIC_LIBS_PATH" install -j"$(nproc)"
+	make prefix="$STATIC_LIBS_PATH" install -j"$(/bin/get_cores)"
 }
 
 build_rsync() {
@@ -48,7 +48,7 @@ build_rsync() {
 		./configure --host="$HOST" \
 		--disable-md2man
 
-	make -j"$(nproc)"
+	make -j"$(/bin/get_cores)"
 }
 
 log "Starting rsync build process..."

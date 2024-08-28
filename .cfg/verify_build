@@ -2,39 +2,67 @@
 
 BINARIES=()
 CHECK_PATH="$(pwd)"
+LOG=""
 
 verify_binaries() {
+	if [ -n "$LOG" ]; then
+		BUILD_LOG="$LOG"
+	fi
+
 	for item in "${BINARIES[@]}"; do
 		# Get just the binary name without the path
 		local binary_name
+		local full_path
 		binary_name=$(basename "$item")
 
-		# Construct the full path to check
-		local full_path="${CHECK_PATH:+$CHECK_PATH/}${item}"
+		# Check if the item contains a path separator
+		if [[ "$item" == *"/"* ]]; then
+			# Extract the first part of the path
+			local first_part
+			first_part=$(echo "$item" | cut -d'/' -f1)
+
+			# Check if the first part exists as a directory in CHECK_PATH
+			if [ -n "$CHECK_PATH" ] && [ -d "$CHECK_PATH/$first_part" ]; then
+				# If it does, concatenate CHECK_PATH with item
+				full_path="$CHECK_PATH/$item"
+			else
+				# If it doesn't, use item as is
+				full_path="$item"
+			fi
+		else
+			# If it doesn't contain a slash, prepend CHECK_PATH if it's set
+			full_path="${CHECK_PATH:+$CHECK_PATH/}${item}"
+		fi
 
 		if [ -f "$full_path" ]; then
-			echo "  [OK] Building ${item}"
+			echo "  [OK] Building ${item}" | tee -a "$BUILD_LOG"
 
 			# Compress & copy the binary to `BINARIES_DIR`, flattening the structure
-			if file "$full_path" | grep -q "ELF"; then
+			local file_out
+			file_out=$(file "$full_path")
+			if echo "$file_out" | grep -q "ELF"; then
 
-				if ! file "$full_path" | grep -q "64-bit"; then
-					echo "  [FAIL] ${item} is not 64-bit"
+				if ! echo "$file_out" | grep -q "64-bit"; then
+					echo "  [FAIL] ${item} is not 64-bit" | tee -a "$BUILD_LOG"
+					echo "    -> $file_out" | tee -a "$BUILD_LOG"
 					return 1
 				fi
 
-				if ! file "$full_path" | grep -q "ARM aarch64"; then
-					echo "[FAIL] ${item} is not ARM aarch64"
+				if ! echo "$file_out" | grep -q "ARM aarch64"; then
+					echo "[FAIL] ${item} is not ARM aarch64" | tee -a "$BUILD_LOG"
+					echo "    -> $file_out" | tee -a "$BUILD_LOG"
 					return 1
 				fi
 
-				if ! file "$full_path" | grep -q "statically linked"; then
-					echo "  [FAIL] ${item} is not statically linked"
+				if ! echo "$file_out" | grep -q "statically linked"; then
+					echo "  [FAIL] ${item} is not statically linked" | tee -a "$BUILD_LOG"
+					echo "    -> $file_out" | tee -a "$BUILD_LOG"
 					return 1
 				fi
 
-				if ! file "$full_path" | grep -q "stripped"; then
-					echo "  [FAIL] ${item} is not stripped"
+				if ! echo "$file_out" | grep -q "stripped"; then
+					echo "  [FAIL] ${item} is not stripped" | tee -a "$BUILD_LOG"
+					echo "    -> $file_out" | tee -a "$BUILD_LOG"
 					return 1
 				fi
 
@@ -43,23 +71,29 @@ verify_binaries() {
 				upx_output=$(upx --best --lzma --quiet "$full_path" 2>&1)
 				upx_exit_code=$?
 				if [ $upx_exit_code -eq 0 ]; then
-					echo "  [OK] Packing with UPX"
+					echo "  [OK] Packing with UPX" | tee -a "$BUILD_LOG"
 				elif echo "$upx_output" | grep -q "AlreadyPackedException"; then
-					echo "  [WARN] UPX detected, skipping UPX for $item"
+					echo "  [WARN] UPX detected, skipping UPX for $item" | tee -a "$BUILD_LOG"
 				else
-					printf "  [FAIL] UPX failed for %s $item:\n\n%s", "$item", "$upx_output"
+					printf "  [FAIL] UPX failed for %s $item:\n\n%s", "$item", "$upx_output" | tee -a "$BUILD_LOG"
 					return 1
 				fi
 			fi
-			cp "$full_path" "${BINARIES_DIR}/${binary_name}"
-			echo "  [OK] Copying ${binary_name}"
+			cp_out=$(cp "$full_path" "${BINARIES_DIR}/${binary_name}")
+			cp_exit_code=$?
+			if [ $cp_exit_code -eq 0 ]; then
+				echo "  [OK] Copying ${binary_name}" | tee -a "$BUILD_LOG"
+			else
+				echo "  [FAIL] Copying ${binary_name}" | tee -a "$BUILD_LOG"
+				echo "   -> $cp_out" | tee -a "$BUILD_LOG"
+			fi
 		else
-			echo "  [FAIL] ${item} not found in ${CHECK_PATH}"
+			echo "  [FAIL] ${item} not found in ${CHECK_PATH}" | tee -a "$BUILD_LOG"
 			return 1
 		fi
 	done
 
-	log "All binaries verified successfully"
+	log "All binaries verified successfully" | tee -a "$BUILD_LOG"
 	return 0
 }
 
@@ -74,8 +108,12 @@ while (("$#")); do
 		IFS=' ' read -ra BINARIES <<<"$2"
 		shift 2
 		;;
+	-l | --log)
+		LOG=$2
+		shift 2
+		;;
 	-h | --help)
-		log "Usage: $0 [-p|--path <path>] [-b|--binaries <space-separated binaries>]"
+		log "Usage: $0 [-p|--path <path>] [-b|--binaries <space-separated binaries>] [-l|--log <log file>]"
 		exit 0
 		;;
 	-*)
