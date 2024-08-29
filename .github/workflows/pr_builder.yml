@@ -1,0 +1,62 @@
+name: PR Builder
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch all history for all branches and tags
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v39
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ hashFiles('.cfg/Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build toolchain
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: .cfg/Dockerfile
+          load: true
+          tags: aarch64_musl_cross:v1.0
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Find folders with build.sh and run build script
+        run: |
+          folders_to_build=()
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            dir=$(dirname "$file")
+            if [[ "$dir" != "." && -f "$dir/build.sh" && ! " ${folders_to_build[@]} " =~ " $dir " ]]; then
+              folders_to_build+=("$dir")
+            fi
+          done
+
+          if [ ${#folders_to_build[@]} -gt 0 ]; then
+            echo "Running build script for folders: ${folders_to_build[*]}"
+            chmod +x build.sh
+            ./build.sh "${folders_to_build[@]}"
+          else
+            echo "No folders with build.sh were changed in this PR."
+          fi
