@@ -13,6 +13,7 @@
 # TARGET = arm-linux-musleabihf
 # TARGET = sh2eb-linux-muslfdpic
 # ...
+# NOTE: For an armv7 build use TARGET = armv7-linux-musleabihf
 TARGET = aarch64-linux-musleabi
 
 # By default, cross compilers are installed to ./output under the top-level
